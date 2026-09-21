@@ -1,0 +1,16 @@
+# Local R and operating-system files
+.DS_Store
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user/
+.Renviron
+.Renviron.*
+.env
+.env.*
+# Local deployment records
+rsconnect/
+# Generated local output
+Rplots.pdf
+*.log
