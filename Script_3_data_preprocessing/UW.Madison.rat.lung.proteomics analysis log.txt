@@ -1,0 +1,8 @@
+Study number: UW.Madison.rat.lung.proteomics
+2026-09-15 10:17:16.151621 Total protein groups identified: 3859
+2026-09-15 10:17:32.464926 Protein groups passed missing value filtering: 3600
+2026-09-15 10:17:32.465158 Rate of missing values before filtering: 0.132555389997409
+2026-09-15 10:17:32.465891 Rate of missing values after filtering: 0.084849537037037
+2026-09-15 10:18:04.594246 Imputation has been performed using Random Forest, OOB error of RF = 0.17730753971614
+2026-09-15 10:18:51.05864 Imputation has been performed using QRILC on the basis of RF, protein IDs changed:2652
+2026-09-15 15:58:49.775793 Excel file of protein intensity data tables is created

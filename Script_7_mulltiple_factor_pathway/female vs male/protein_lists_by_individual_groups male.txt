@@ -1,0 +1,81 @@
+Group: Bottom_Aged 
+Number of proteins: 10 
+Proteins:
+Gpld1
+Mug2
+Serpina3m
+Afm
+Serpina3l
+Huwe1
+Cpsf4
+Acsbg1
+Eif2s3y
+Smarcad1
+
+
+Group: Central_Aged 
+Number of proteins: 7 
+Proteins:
+Serpina3m
+Eif2s3y
+Adm2
+Atrx
+Mfap3
+Krt4
+Bdh2
+
+
+Group: Peripheral_Aged 
+Number of proteins: 8 
+Proteins:
+Serpina3m
+Serpina3l
+Acsbg1
+Eif2s3y
+Adm2
+Abhd17a
+Gas8
+Msrb2
+
+
+Group: Top_Aged 
+Number of proteins: 3 
+Proteins:
+Mug2
+Serpina3m
+Eif2s3y
+
+
+Group: Bottom_Young 
+Number of proteins: 1 
+Proteins:
+Eif2s3y
+
+
+Group: Central_Young 
+Number of proteins: 4 
+Proteins:
+Eif2s3y
+Mfap3
+Ireb2
+Krt14
+
+
+Group: Peripheral_Young 
+Number of proteins: 7 
+Proteins:
+Eif2s3y
+Frmd6
+Scn3b
+Ripk3
+Pnpo
+Phf23
+Fdft1
+
+
+Group: Top_Young 
+Number of proteins: 1 
+Proteins:
+Eif2s3y
+
+

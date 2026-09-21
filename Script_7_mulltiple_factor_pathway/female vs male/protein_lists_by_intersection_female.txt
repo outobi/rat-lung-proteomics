@@ -1,0 +1,143 @@
+PROTEIN LISTS FOR EACH INTERSECTION GROUP IN UPSET PLOT (FEMALE DATA)
+================================================================================ 
+
+INTERSECTION GROUP 1 : Only Top_Young 
+Number of proteins: 32 
+Proteins:
+Isca1
+Sgf29
+Dagla
+Mcm6
+Foxo1
+Cav3
+Slc4a7
+Rbm47
+Nedd8
+Bin2
+C6
+Cycs
+Rwdd4
+Phactr2
+Haus1
+C4bpa
+Poglut3
+Txnrd2
+Ppid
+Igf2bp1
+Tmsb10
+S1pr1
+Mpst
+Naxe
+Ero1a
+Coro1b
+P3h1
+Hibch
+Hibadh
+C8b
+Epb41l1
+Suox
+
+ ================================================== 
+
+INTERSECTION GROUP 2 : Only Bottom_Aged 
+Number of proteins: 5 
+Proteins:
+Tmem192
+Slc5a1
+Rdh16
+Abcb1
+Ntn1
+
+ ================================================== 
+
+INTERSECTION GROUP 3 : Only Central_Young 
+Number of proteins: 4 
+Proteins:
+Ccn3
+Myl1
+Robo1
+Fen1
+
+ ================================================== 
+
+INTERSECTION GROUP 4 : Bottom_Aged ∩ Central_Aged ∩ Peripheral_Aged ∩ Top_Aged 
+Number of proteins: 3 
+Proteins:
+Spp2
+Igg-2a
+Mgp
+
+ ================================================== 
+
+INTERSECTION GROUP 5 : Only Peripheral_Young 
+Number of proteins: 3 
+Proteins:
+Cacnb3
+Ntrk2
+Mest
+
+ ================================================== 
+
+INTERSECTION GROUP 6 : Bottom_Aged ∩ Central_Aged ∩ Peripheral_Aged ∩ Top_Aged ∩ Central_Young ∩ Top_Young 
+Number of proteins: 1 
+Proteins:
+A1bg
+
+ ================================================== 
+
+INTERSECTION GROUP 7 : Bottom_Aged ∩ Central_Aged ∩ Peripheral_Aged ∩ Top_Aged ∩ Central_Young ∩ Peripheral_Young ∩ Top_Young 
+Number of proteins: 1 
+Proteins:
+Serpina6
+
+ ================================================== 
+
+INTERSECTION GROUP 8 : Bottom_Aged ∩ Peripheral_Aged ∩ Top_Aged 
+Number of proteins: 1 
+Proteins:
+Htra1
+
+ ================================================== 
+
+INTERSECTION GROUP 9 : Central_Aged ∩ Top_Aged 
+Number of proteins: 1 
+Proteins:
+ENSRNOG00000050000
+
+ ================================================== 
+
+INTERSECTION GROUP 10 : Only Central_Aged 
+Number of proteins: 1 
+Proteins:
+Lyzl4
+
+ ================================================== 
+
+INTERSECTION GROUP 11 : Central_Aged ∩ Bottom_Young ∩ Central_Young ∩ Peripheral_Young ∩ Top_Young 
+Number of proteins: 1 
+Proteins:
+Map1
+
+ ================================================== 
+
+INTERSECTION GROUP 12 : Central_Aged ∩ Peripheral_Aged ∩ Top_Aged ∩ Bottom_Young ∩ Central_Young ∩ Peripheral_Young ∩ Top_Young 
+Number of proteins: 1 
+Proteins:
+ENSRNOG00000030387
+
+ ================================================== 
+
+INTERSECTION GROUP 13 : Only Peripheral_Aged 
+Number of proteins: 1 
+Proteins:
+Apoa2
+
+ ================================================== 
+
+INTERSECTION GROUP 14 : Only Bottom_Young 
+Number of proteins: 1 
+Proteins:
+Spg7
+
+ ================================================== 
+

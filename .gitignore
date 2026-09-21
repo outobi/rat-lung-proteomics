@@ -14,3 +14,9 @@ rsconnect/
 # Generated local output
 Rplots.pdf
 *.log
+
+# Excel temporary lock files
+~$*
+# Large Script 9 workspace snapshots (see docs/large_files_not_in_git.csv)
+/Script_9_region_cell_type_enrichment_with_scRNAseq/region protein marker in scRNAseq cell type/data summary 20260823.RData
+/Script_9_region_cell_type_enrichment_with_scRNAseq/scRNAseq cell type marker score in regions/data summary 20260825.RData

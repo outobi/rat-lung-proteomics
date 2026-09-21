@@ -1,0 +1,129 @@
+Group: Bottom_Aged 
+Number of proteins: 11 
+Proteins:
+A1bg
+Spp2
+Igg-2a
+Tmem192
+Mgp
+Slc5a1
+Rdh16
+Serpina6
+Abcb1
+Ntn1
+Htra1
+
+
+Group: Central_Aged 
+Number of proteins: 9 
+Proteins:
+A1bg
+Spp2
+Igg-2a
+Mgp
+Serpina6
+ENSRNOG00000050000
+Lyzl4
+Map1
+ENSRNOG00000030387
+
+
+Group: Peripheral_Aged 
+Number of proteins: 8 
+Proteins:
+A1bg
+Spp2
+Igg-2a
+Mgp
+Serpina6
+Htra1
+ENSRNOG00000030387
+Apoa2
+
+
+Group: Top_Aged 
+Number of proteins: 8 
+Proteins:
+A1bg
+Spp2
+Igg-2a
+Mgp
+Serpina6
+Htra1
+ENSRNOG00000050000
+ENSRNOG00000030387
+
+
+Group: Bottom_Young 
+Number of proteins: 3 
+Proteins:
+Map1
+ENSRNOG00000030387
+Spg7
+
+
+Group: Central_Young 
+Number of proteins: 8 
+Proteins:
+A1bg
+Serpina6
+Map1
+ENSRNOG00000030387
+Ccn3
+Myl1
+Robo1
+Fen1
+
+
+Group: Peripheral_Young 
+Number of proteins: 6 
+Proteins:
+Serpina6
+Map1
+ENSRNOG00000030387
+Cacnb3
+Ntrk2
+Mest
+
+
+Group: Top_Young 
+Number of proteins: 36 
+Proteins:
+A1bg
+Serpina6
+Map1
+ENSRNOG00000030387
+Isca1
+Sgf29
+Dagla
+Mcm6
+Foxo1
+Cav3
+Slc4a7
+Rbm47
+Nedd8
+Bin2
+C6
+Cycs
+Rwdd4
+Phactr2
+Haus1
+C4bpa
+Poglut3
+Txnrd2
+Ppid
+Igf2bp1
+Tmsb10
+S1pr1
+Mpst
+Naxe
+Ero1a
+Coro1b
+P3h1
+Hibch
+Hibadh
+C8b
+Epb41l1
+Suox
+
+
