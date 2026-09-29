@@ -1169,9 +1169,9 @@ large_scores_aged_top <- query_large_celltype(
 )
 
 
-sapply(celltype_group, function(x)
-  +     sum(rat$cell_type %in% x)
-  + )
+sapply(celltype_group, function(x){
+       sum(rat$cell_type %in% x)
+  } )
 #Epithelial Endothelial     Stromal     Myeloid    Lymphoid 
 #3333        1650         702        3147        1823 
 

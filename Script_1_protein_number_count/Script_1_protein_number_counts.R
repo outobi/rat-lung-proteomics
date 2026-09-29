@@ -20,7 +20,7 @@ View(head(data1))
 
 # ID mapping and create annatation table (feature metadata) ----------------------------------
 
-load("20220113_uniprot_annotation_MW_IPA_matrisome.RData")
+load("20220113_uniprot_annotation.RData")
 anno_table <- anno_mapping[[match("rat",names(anno_mapping))]]
 anno_table <- anno_table[match(rownames(data1),anno_table$Uniprot.ID),]
 anno_table <- subset(anno_table, !is.na(anno_table$Uniprot.ID))      #3859 protein IDs are annotated from 3868
@@ -174,7 +174,8 @@ for (i in 1:3859) {
 
 
 # Collect count tables and the annotated intensity table as separate worksheets.
-!!!# make bar plot for figure xxx
+# make bar plot for figure xxx
+
 tables_list <- list(
   "Total_proteins" = id.table.wide,
   "Matrisome_proteins" = matrisome.id.table.wide,
@@ -184,10 +185,7 @@ tables_list <- list(
 )
 
 
-# Save the data table for Script_2
+write_xlsx(raw_table_annotation, "Matrisome_annotation_table.xlsx")
+# Save the data table for Script_2 and _3
 write_xlsx(tables_list, "Protein_counts_summary.xlsx")
-
-
-# Save the original expression matrix for Script_2
-saveRDS(data1, file =  "expression_matrix.rds")
 

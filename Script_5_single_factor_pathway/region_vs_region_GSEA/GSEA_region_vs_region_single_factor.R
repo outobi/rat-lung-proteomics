@@ -129,7 +129,7 @@ p4 <- ggplot(down, aes(x = (-1) * NES, y = Description, color = `Log10(FDR)`, si
 # Make Figure 6f
 print(p4)
 
-# 9 SUPPLEMEANTRY FIGURES
+
 # Plot 5: GSEA reactome, bottom vs top, enriched in the top group.
 down <- read_excel("GSEA_summary_bottom_vs_top.xlsx",
   sheet = "Reactome"
@@ -159,9 +159,9 @@ p5 <- ggplot(down, aes(x = (-1) * NES, y = Description, color = `Log10(FDR)`, si
 # Make Figure 6g
 print(p5)
 
-
+# 9 SUPPLEMEANTRY FIGURES---------
 # Plot 6: GSEA GO, Bottom vs Central, enriched in the central group.
-up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "GO bottom vs central")
+up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "GO bottom < central")
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
 up <- up %>%
@@ -191,7 +191,7 @@ print(p6)
 
 
 # Plot 7: GSEA Reactome, Bottom vs Central, enriched in the central group.
-up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "Reactome bottom vs central")
+up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "Reactome bottom < central")
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
 up <- up %>%
@@ -215,7 +215,7 @@ print(p7)
 
 
 # Plot 8: GSEA GO, Bottom vs Peripheral, enriched in the peripheral group.
-up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "GO bottom vs peri")
+up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "GO bottom < peri")
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
 up <- up %>%
@@ -245,7 +245,7 @@ print(p8)
 
 
 # Plot 9: GSEA GO, Central vs Top, enriched in the central group.
-up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "GO central vs top")
+up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "GO central > top")
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
 up <- up %>%
@@ -275,7 +275,7 @@ print(p9)
 
 
 # Plot 10: GSEA Reactome, Central vs Top, enriched in the central group.
-up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "Reactome central vs top")
+up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx", sheet = "Reactome central > top")
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
 up <- up %>%
@@ -300,7 +300,7 @@ print(p10)
 
 # Plot 11: GSEA Reactome, Central vs Top, enriched in the top group.
 up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx",
-  sheet = "Reactome top vs central"
+  sheet = "Reactome central < top"
 )
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
@@ -326,7 +326,7 @@ print(p11)
 
 # Plot 13: GSEA GO, Peripheral vs Top, enriched in the peripheral group.
 up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx",
-  sheet = "GO peri vs top"
+  sheet = "GO peri < top"
 )
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
@@ -358,7 +358,7 @@ print(p12)
 
 # Plot 12: GSEA GO, Peripheral vs Top, enriched in the top group.
 up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx",
-  sheet = "GO top vs peri"
+  sheet = "GO peri > top"
 )
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).
@@ -390,7 +390,7 @@ print(p13)
 
 # Plot 14: GSEA Reactome, Peripheral vs Top, enriched in the top group.
 up <- read_excel("Supplementary_table_region_vs_reigon_single_factor_GSEA.xlsx",
-  sheet = "Reactome peri vs top"
+  sheet = "Reactome peri < top"
 )
 
 # Sort terms and preserve the resulting y-axis order (bottom to top).

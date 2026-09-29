@@ -7,8 +7,8 @@ This folder contains two Shiny applications for exploring precomputed protein di
 - Proposed manuscript release: **v1.0.0** (not yet tagged or published).
 - Local data snapshot: **2026-09-21**.
 - Authoritative helper data: the four files in the root of `Script_10_R_Shiny`, regenerated using the current analysis workflow.
-- The helper files in `apps/` were copied from this current working version.
-- The local applications have initialized successfully with these files.
+- The helper files in `apps/` were copied from this current working version. 
+- The local applications have initialized successfully with these files. 
 
 ## Folder contents
 
@@ -33,7 +33,7 @@ Script_10_R_Shiny/
         └── helper volcano plot.RData
 ```
 
-The root helper files are the source copies; the copies inside each application make it independently runnable. If helper data are regenerated, refresh the corresponding SAME NAME files inside `apps/` before running or deploying the applications.
+The root helper files are the source copies; the copies inside each application make it independently runnable. If helper data are regenerated, refresh the corresponding SAME NAME files inside `apps/` before running or deploying the applications. 
 
 ## Run locally
 
@@ -92,7 +92,7 @@ In the protein helper tables, adjusted P values are populated from the DE result
 
 **Volcano explorer:** select a comparison, adjust highlighting thresholds and inspect the results table. “Download Data” exports the selected comparison; “Download Plot” exports a PNG.
 
-The volcano application retains its original sliders and 0.1 steps. The configured default values are `log2(1.5)` for the absolute estimate cutoff and `-log10(0.05)` for the −log10(FDR) cutoff, corresponding to the manuscript criteria. Slider display or movement may round values to the slider precision; use full-precision downloaded statistics for exact manuscript cutoffs. Changing a cutoff changes highlighting, not the precomputed statistical results.
+The volcano application retains its original sliders and 0.1 steps. The configured default values are `log2(1.5)` for the absolute estimate cutoff and `-log10(0.05)` for the −log10(FDR) cutoff, corresponding to the manuscript criteria. Slider display or movement may round values to the slider precision; use full-precision downloaded statistics for exact manuscript cutoffs. Changing a cutoff changes highlighting, not the precomputed statistical results. 
 
 ## Relationship to the manuscript
 

@@ -26,13 +26,16 @@ sample_order <- c("YTM", "YCM", "YPM", "YBM", "YTF", "YCF", "YPF", "YBF", "ATM",
 log_file <- paste0(study_number, " analysis log.txt")
 cat(paste("Study number:", study_number), file = log_file, sep = "\n")
 
-# load data1
-data1 <- readRDS("expression_matrix.rds")
+
 
 # Read the seven annotation columns from the protein-count summary workbook.
 matrisome_anno_table <- read_excel("Protein_counts_summary.xlsx",
   sheet = "Raw_table_annotation")
+
+data1 <- matrisome_anno_table[-c(1:7)]
 matrisome_anno_table <- matrisome_anno_table[c(1:7)]
+
+
 
 
 # Read the first sample-metadata worksheet and standardize its column names.

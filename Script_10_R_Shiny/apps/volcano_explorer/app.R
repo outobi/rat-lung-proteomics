@@ -9,20 +9,20 @@ load("helper volcano plot.RData")
 # Define comparison groups
 
 
-region.vs.region.index.all <- c("Young Male: Bottom versus Central", "Young Male: Bottom versus Peripheral",
-                                "Young Male: Bottom versus Top", "Young Male: Central versus Peripheral",
-                                "Young Male: Central versus Top", "Young Male: Peripheral versus Top",
-
-                                "Young Female: Bottom versus Central", "Young Female: Bottom versus Peripheral",
-                                "Young Female: Bottom versus Top", "Young Female: Central versus Peripheral",
+region.vs.region.index.all <- c("Young Male: Bottom versus Central", "Young Male: Bottom versus Peripheral", 
+                                "Young Male: Bottom versus Top", "Young Male: Central versus Peripheral", 
+                                "Young Male: Central versus Top", "Young Male: Peripheral versus Top", 
+                                
+                                "Young Female: Bottom versus Central", "Young Female: Bottom versus Peripheral", 
+                                "Young Female: Bottom versus Top", "Young Female: Central versus Peripheral", 
                                 "Young Female: Central versus Top", "Young Female: Peripheral versus Top",
-
-                                "Aged Male: Bottom versus Central", "Aged Male: Bottom versus Peripheral",
-                                "Aged Male: Bottom versus Top", "Aged Male: Central versus Peripheral",
+                                
+                                "Aged Male: Bottom versus Central", "Aged Male: Bottom versus Peripheral", 
+                                "Aged Male: Bottom versus Top", "Aged Male: Central versus Peripheral", 
                                 "Aged Male: Central versus Top", "Aged Male: Peripheral versus Top",
-
-                                "Aged Female: Bottom versus Central", "Aged Female: Bottom versus Peripheral",
-                                "Aged Female: Bottom versus Top", "Aged Female: Central versus Peripheral",
+                                
+                                "Aged Female: Bottom versus Central", "Aged Female: Bottom versus Peripheral", 
+                                "Aged Female: Bottom versus Top", "Aged Female: Central versus Peripheral", 
                                 "Aged Female: Central versus Top", "Aged Female: Peripheral versus Top"
 )
 comparisons <- list(
@@ -60,9 +60,9 @@ for(i in 1:length(region.vs.region)) {
 
 # UI section
 ui <- fluidPage(
-  titlePanel(div("Differential Expression Analysis",
+  titlePanel(div("Differential Expression Analysis", 
                  style = "color: #333; padding: 10px")),
-
+  
   sidebarLayout(
     sidebarPanel(
       width = 3,
@@ -131,31 +131,31 @@ ui <- fluidPage(
           }
         "))
       ),
-
-      downloadButton("downloadPlot", "Download Plot",
+      
+      downloadButton("downloadPlot", "Download Plot", 
                      style = "margin-bottom: 15px; width: 100%;"),
-
+      
       selectInput("comparison_type",
                   "Select Comparison Type:",
                   choices = c("Age", "Sex", "Region"),
                   selected = "Age"),
-
+      
       uiOutput("comparison_selector"),
-
+      
       sliderInput("fc_cutoff",
                   "Estimate Change Threshold:",
                   min = 0,
                   max = 4,
                   value = log2(1.5),
                   step = 0.1),
-
+      
       sliderInput("p_cutoff",
                   "- Log10 (FDR)",
                   min = 0,
                   max = 20,
                   value = -log10(0.05),
                   step = 0.1),
-
+      
       sliderInput("point_size",
                   "Point Size:",
                   min = 1,
@@ -163,12 +163,12 @@ ui <- fluidPage(
                   value = 2.5,
                   step = 0.5)
     ),
-
+    
     mainPanel(
       width = 9,
       tabsetPanel(
         type = "tabs",
-        tabPanel("Volcano Plot",
+        tabPanel("Volcano Plot", 
                  div(style = "position: relative;",
                      plotOutput("volcanoPlot",
                                 click = "plot_click",
@@ -177,7 +177,7 @@ ui <- fluidPage(
                      verbatimTextOutput("plot_stats"),
                      verbatimTextOutput("click_info")
                  )),
-        tabPanel("Protein Table",
+        tabPanel("Protein Table", 
                  div(style = "margin-top: 20px",
                      downloadButton("downloadData", "Download Data"),
                      DTOutput("geneTable")))
@@ -188,39 +188,39 @@ ui <- fluidPage(
 
 # Server section
 server <- function(input, output, session) {
-
+  
   output$comparison_selector <- renderUI({
     comp_type <- tolower(input$comparison_type)
     selectInput("selected_comparison",
                 "Select Comparison:",
                 choices = comparisons[[comp_type]])
   })
-
+  
   selected_data <- reactiveVal()
-
+  
   get_comparison_data <- reactive({
     req(input$comparison_type, input$selected_comparison)
     key <- paste(tolower(input$comparison_type), input$selected_comparison, sep = "_")
     all_deg_data[[key]]
   })
-
+  
   create_volcano_plot <- function(gene_data) {
     # Create color categories
     gene_data$color_category <- "Not Significant"
-    gene_data$color_category[gene_data$estimate > input$fc_cutoff &
+    gene_data$color_category[gene_data$estimate > input$fc_cutoff & 
                                gene_data$`???Log10(FDR)` > input$p_cutoff] <- "Up"
-    gene_data$color_category[gene_data$estimate < -input$fc_cutoff &
+    gene_data$color_category[gene_data$estimate < -input$fc_cutoff & 
                                gene_data$`???Log10(FDR)` > input$p_cutoff] <- "Down"
-
+    
     # Convert to factor with specific order
-    gene_data$color_category <- factor(gene_data$color_category,
+    gene_data$color_category <- factor(gene_data$color_category, 
                                        levels = c("Not Significant", "Up", "Down"))
-
+    
     ggplot(gene_data, aes(x = estimate, y = `???Log10(FDR)`)) +
       geom_point(aes(color = color_category),
                  size = input$point_size) +
       geom_hline(yintercept = input$p_cutoff, linetype = "dashed") +
-      geom_vline(xintercept = c(-input$fc_cutoff, input$fc_cutoff),
+      geom_vline(xintercept = c(-input$fc_cutoff, input$fc_cutoff), 
                  linetype = "dashed") +
       scale_color_manual(values = c("grey", "red", "green3")) +
       labs(x = "Estimate Change",
@@ -237,45 +237,45 @@ server <- function(input, output, session) {
         panel.grid.minor = element_blank()
       )
   }
-
+  
   output$volcanoPlot <- renderPlot({
     req(input$selected_comparison)
     gene_data <- get_comparison_data()
     gene_data[,"???Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
     create_volcano_plot(gene_data)
   })
-
+  
   output$plot_stats <- renderPrint({
     gene_data <- get_comparison_data()
     gene_data[,"???Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
-
+    
     # Calculate up-regulated proteins
-    up_proteins <- sum(gene_data$estimate > input$fc_cutoff &
+    up_proteins <- sum(gene_data$estimate > input$fc_cutoff & 
                          gene_data$`???Log10(FDR)` > input$p_cutoff)
-
+    
     # Calculate down-regulated proteins
-    down_proteins <- sum(gene_data$estimate < -input$fc_cutoff &
+    down_proteins <- sum(gene_data$estimate < -input$fc_cutoff & 
                            gene_data$`???Log10(FDR)` > input$p_cutoff)
-
+    
     # Calculate total significant proteins
     total_sig <- up_proteins + down_proteins
-
+    
     cat(sprintf("\nTotal Significant Proteins: %d\nUp-regulated Proteins: %d\nDown-regulated Proteins: %d\n",
                 total_sig, up_proteins, down_proteins))
   })
-
+  
   output$click_info <- renderPrint({
     if (!is.null(input$plot_click)) {
       gene_data <- get_comparison_data()
       gene_data$neglog10p <- -log10(gene_data$p.value.adjusted)
-
-      nearest_point <- nearPoints(gene_data,
-                                  input$plot_click,
+      
+      nearest_point <- nearPoints(gene_data, 
+                                  input$plot_click, 
                                   xvar = "estimate",
                                   yvar = "neglog10p",
-                                  threshold = 10,
+                                  threshold = 10, 
                                   maxpoints = 1)
-
+      
       if (nrow(nearest_point) > 0) {
         nearest_point[,"???Log10(FDR)"] <- nearest_point$neglog10p
         nearest_point$neglog10p <- NULL
@@ -284,41 +284,41 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   observe({
     brush <- input$plot_brush
     if (!is.null(brush)) {
       gene_data <- get_comparison_data()
       gene_data$neglog10p <- -log10(gene_data$p.value.adjusted)
-
+      
       selected <- subset(gene_data,
                          estimate >= brush$xmin &
                            estimate <= brush$xmax &
                            neglog10p >= brush$ymin &
                            neglog10p <= brush$ymax)
-
+      
       selected[,"???Log10(FDR)"] <- selected$neglog10p
       selected$neglog10p <- NULL
       selected_data(selected)
     }
   })
-
+  
   output$geneTable <- renderDT({
     if (!is.null(selected_data())) {
       data <- selected_data()
     } else {
       data <- get_comparison_data()
     }
-
+    
     data[,"???Log10(FDR)"] <- -log10(data$p.value.adjusted)
-
+    
     datatable(data,
               options = list(pageLength = 10,
                              scrollX = TRUE),
               rownames = FALSE) %>%
       formatSignif(columns = c("estimate", "p.value.adjusted", "???Log10(FDR)"), digits = 3)
   })
-
+  
   output$downloadPlot <- downloadHandler(
     filename = function() {
       paste("volcano_plot_", input$selected_comparison, ".png", sep = "")
@@ -330,7 +330,7 @@ server <- function(input, output, session) {
       ggsave(file, plot, width = 10, height = 8, dpi = 300)
     }
   )
-
+  
   output$downloadData <- downloadHandler(
     filename = function() {
       paste("protein_data_", input$selected_comparison, ".csv", sep = "")
