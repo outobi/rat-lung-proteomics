@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1120" viewBox="0 0 1120 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Rat lung proteomics analysis workflow</title>
+  <desc id="desc">Protein annotation feeds peptide counting and preprocessing. Preprocessing supports single-factor, multiple-factor and interaction models. External enrichment produces pathway summaries for plotting. Prepared expression and reference single-cell data support cell-type analysis. Multiple-factor results feed Shiny applications.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#58677d"/></marker>
+    <style>
+      text {font-family:Arial,Helvetica,sans-serif;fill:#182b45;text-anchor:middle;font-size:17px}
+      .heading {font-size:24px;font-weight:700}
+      .node {fill:#edf3fb;stroke:#6086b5;stroke-width:1.5}
+      .external {fill:#fff6e5;stroke:#bd9146;stroke-width:1.5}
+      .edge {fill:none;stroke:#58677d;stroke-width:1.6;marker-end:url(#arrow)}
+      .note {font-size:14px;fill:#475569}
+      .num {font-weight:700}
+    </style>
+  </defs>
+  <rect width="1120" height="1120" fill="white"/>
+  <text class="heading" x="560" y="35">Rat lung proteomics workflow</text>
+  <path class="edge" d="M560 135 V170"/>
+  <path class="edge" d="M560 250 V305"/>
+  <path class="edge" d="M420 210 H180 V245"/>
+  <path class="edge" d="M180 190 V245"/>
+  <path class="edge" d="M560 385 V425 H160 V465"/>
+  <path class="edge" d="M425 425 V465"/>
+  <path class="edge" d="M560 425 H690 V465"/>
+  <path class="edge" d="M933 370 V465" stroke-dasharray="5 4"/>
+  <path class="edge" d="M955 265 V285 H1095 V445 H980 V465"/>
+  <path class="edge" d="M700 345 H790" stroke-dasharray="5 4"/>
+  <path class="edge" d="M160 545 V585"/>
+  <path class="edge" d="M425 545 V585"/>
+  <path class="edge" d="M690 545 V585"/>
+  <path class="edge" d="M160 665 V705"/>
+  <path class="edge" d="M425 665 V705"/>
+  <path class="edge" d="M690 665 V705"/>
+  <path class="edge" d="M545 505 H557 V815 H955 V840"/>
+  <rect class="external" x="420" y="65" width="280" height="70" rx="7"/>
+  <text x="560" y="94"><tspan x="560">DIA-NN protein matrix</tspan><tspan x="560" dy="24">and annotation resources</tspan></text>
+  <rect class="node" x="420" y="170" width="280" height="80" rx="7"/>
+  <text x="560" y="202"><tspan class="num" x="560">1 · Protein counts</tspan><tspan x="560" dy="25">and annotation</tspan></text>
+  <rect class="external" x="60" y="120" width="240" height="70" rx="7"/>
+  <text x="180" y="148"><tspan x="180">Peptide table</tspan><tspan x="180" dy="24">and sample metadata</tspan></text>
+  <rect class="node" x="60" y="245" width="240" height="70" rx="7"/>
+  <text x="180" y="275"><tspan class="num" x="180">2 · Peptide counts</tspan><tspan x="180" dy="23">Coverage summary</tspan></text>
+  <rect class="node" x="420" y="305" width="280" height="80" rx="7"/>
+  <text x="560" y="329"><tspan class="num" x="560">3 · Preprocessing</tspan><tspan x="560" dy="23">Filter, normalize, impute</tspan><tspan x="560" dy="23">Quality control</tspan></text>
+  <rect class="external" x="835" y="195" width="240" height="70" rx="7"/>
+  <text x="955" y="223"><tspan x="955">Reference scRNA-seq</tspan><tspan x="955" dy="24">matrices and metadata</tspan></text>
+  <rect class="external" x="790" y="305" width="285" height="65" rx="7"/>
+  <text x="933" y="331"><tspan x="933">Prepared expression</tspan><tspan x="933" dy="23">and metadata workbooks</tspan></text>
+  <rect class="node" x="40" y="465" width="240" height="80" rx="7"/>
+  <text x="160" y="497"><tspan class="num" x="160">4 · Single-factor</tspan><tspan x="160" dy="25">differential expression</tspan></text>
+  <rect class="node" x="305" y="465" width="240" height="80" rx="7"/>
+  <text x="425" y="497"><tspan class="num" x="425">6 · Multiple-factor</tspan><tspan x="425" dy="25">differential expression</tspan></text>
+  <rect class="node" x="570" y="465" width="240" height="80" rx="7"/>
+  <text x="690" y="489"><tspan class="num" x="690">8 · Interaction models</tspan><tspan x="690" dy="23">Age × sex</tspan><tspan x="690" dy="23">Age × region</tspan></text>
+  <rect class="node" x="835" y="465" width="240" height="80" rx="7"/>
+  <text x="955" y="489"><tspan class="num" x="955">9 · Cell-type analysis</tspan><tspan x="955" dy="23">Regional protein markers</tspan><tspan x="955" dy="23">and marker scores</tspan></text>
+  <rect class="external" x="40" y="585" width="240" height="80" rx="7"/>
+  <text x="160" y="617"><tspan x="160">External ORA / GSEA</tspan><tspan x="160" dy="25">and curated summaries</tspan></text>
+  <rect class="external" x="305" y="585" width="240" height="80" rx="7"/>
+  <text x="425" y="609"><tspan x="425">Comparison summaries</tspan><tspan x="425" dy="23">External ORA</tspan><tspan x="425" dy="23">and curation</tspan></text>
+  <rect class="external" x="570" y="585" width="240" height="80" rx="7"/>
+  <text x="690" y="617"><tspan x="690">External GSEA</tspan><tspan x="690" dy="25">and curated summaries</tspan></text>
+  <rect class="node" x="40" y="705" width="240" height="80" rx="7"/>
+  <text x="160" y="737"><tspan class="num" x="160">5 · Single-factor</tspan><tspan x="160" dy="25">pathway plots</tspan></text>
+  <rect class="node" x="305" y="705" width="240" height="80" rx="7"/>
+  <text x="425" y="737"><tspan class="num" x="425">7 · Protein-set overlap</tspan><tspan x="425" dy="25">and stratified ORA plots</tspan></text>
+  <rect class="node" x="570" y="705" width="240" height="80" rx="7"/>
+  <text x="690" y="737"><tspan class="num" x="690">8 · Interaction</tspan><tspan x="690" dy="25">GSEA plots</tspan></text>
+  <rect class="node" x="835" y="840" width="240" height="80" rx="7"/>
+  <text x="955" y="864"><tspan class="num" x="955">10 · Shiny helpers</tspan><tspan x="955" dy="23">Protein explorer</tspan><tspan x="955" dy="23">Volcano explorer</tspan></text>
+  <text class="note" x="350" y="886">Blue: analysis modules · Gold: external / prepared inputs</text>
+  <text class="note" x="350" y="910">Dashed: separately prepared input; conversion not automated</text>
+</svg>

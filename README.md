@@ -1,116 +1,125 @@
-# Rat lung proteomics analysis
+# Rat lung proteomics: age, sex and regional variation
 
-Code, processed tables and figure outputs accompanying the rat lung proteomics manuscript. **Scripts 1–10 are now represented in this repository.** This is a working manuscript-revision archive, not yet a validated end-to-end release.
+Analysis scripts, supporting data, pathway summaries and figures for the rat lung proteomics study. The repository covers protein/peptide detection, preprocessing, differential expression, pathway enrichment, age-by-sex and age-by-region interactions, cell-type interpretation and Shiny applications.
 
-The folders preserve the authors' existing analysis organization. Each folder contains its own inputs, scripts and saved outputs; they are not a single automatically chained pipeline. Some enrichment results and plotting tables were prepared externally or curated manually.
+This is a manuscript analysis archive, not a single-command pipeline. Each numbered folder retains its own inputs and outputs. External annotation, enrichment and manual curation are separate steps.
 
-## Workflow and execution order
+## Sample terminology
 
-```mermaid
-flowchart TD
-    Raw[Protein intensity matrix and annotation resources] --> S1[1: Protein counts and annotation]
-    S1 --> S2[2: Peptide counts]
-    Pep[Peptide table and sample metadata] --> S2
-    S1 --> S3[3: Filtering, normalization, imputation and QC]
-    S3 --> S4[4: Single-factor differential expression]
-    S3 --> S6[6: Multiple-factor differential expression]
-    S3 --> S8[8: Age-sex and age-region interactions]
-    S4 --> E5[External enrichment and curated summary tables]
-    E5 --> S5[5: Single-factor pathway plots]
-    S6 --> E7[Comparison summaries, external ORA and curation]
-    E7 --> S7[7: Overlap and multiple-factor pathway plots]
-    S8 --> E8[External GSEA and curated summary tables]
-    E8 --> P8[8: Interaction GSEA plots]
-    S3 -. Prepared expression matrix and metadata .-> S9[9: Regional cell-type enrichment]
-    RNA[Reference scRNA-seq matrices] --> S9
-    S6 --> S10[10: Shiny helper preparation]
-    S10 --> Apps[Protein and volcano explorers]
+- **PP:** peripubertal; **YA:** young adult.
+- **F / M:** female / male.
+- **B / C / P / T:** bottom / central / peripheral / top lung region.
+- Legacy filenames and model labels use `Young` or `Y` for PP and `Aged` or `A` for YA. These are the same study groups, not additional age cohorts. Check sample metadata because character order varies among legacy codes.
+
+## Workflow
+
+![Analysis workflow from protein annotation and preprocessing to differential expression, enrichment, cell-type analysis and Shiny applications.](docs/workflow.svg)
+
+Arrows describe data dependencies, not automatic file transfer. Script 2 is a coverage-summary branch, not a prerequisite for modeling. Script 9 uses separately prepared expression/metadata workbooks plus reference scRNA-seq data. The diagram uses multiline SVG text to avoid clipped labels in README viewers.
+
+## Scripts and outputs
+
+| Module | Purpose and principal files |
+|---|---|
+| [1 — Protein counts and annotation](Script_1_protein_number_count/) | `Script_1_protein_number_counts.R` reads the DIA-NN protein-group matrix, UniProt annotations and sample index. External matrisome annotation supplies `Matrisome_annotation_output.xlsx`. Outputs include `Matrisome_annotation_table.xlsx` and `Protein_counts_summary.xlsx`. |
+| [2 — Peptide counts](Script_2_peptide_number_count/) | `Script_2_peptide_number_count.R` combines `Peptide.xlsx`, protein annotations and sample metadata to generate `Peptide_counts_summary.xlsx`. |
+| [3 — Preprocessing and QC](Script_3_data_preprocessing/) | `Script_3_data_preprocessing.R` reads the `Raw_table_annotation` sheet of `Protein_counts_summary.xlsx` and sample metadata. Performs filtering, log2 transformation, normalization, imputation and QC/PCA. Exports processed intensity/data snapshots and `Real_values_number_in_sample_group.xlsx`. |
+| [4 — Single-factor comparisons](Script_4_single_factor_DE/) | `Script_4_Single_factor_DE.R` estimates age, sex and regional contrasts and produces `Single_factor_DEP_summary.xlsx`, volcano plots, counts and heatmaps. It uses an additive age/sex/region mixed model with a subject random intercept; “single-factor” describes the reported contrasts, not an unadjusted one-predictor model. |
+| [5 — Single-factor pathways](Script_5_single_factor_pathway/) | Subfolders contain YA-versus-PP ORA/GSEA, female-versus-male GSEA and regional GSEA. Scripts plot supplied GO/Reactome summaries; supporting workbooks include pathway annotations and leading-edge protein tables. |
+| [6 — Multiple-factor comparisons](Script_6_multiple_factor_DE/) | `Script_6_multiple_factor_DE.R` fits the Method 4 mixed model with age, sex, region, pairwise interactions and an animal random intercept. Exports `age.vs.young4.xlsx`, `female.vs.male4.xlsx`, `region.vs.region4.xlsx`, DEP summaries and figures: 8 age, 8 sex and 24 regional contrasts. |
+| [7 — Overlap and stratified ORA](Script_7_mulltiple_factor_pathway/) | Age-comparison protein sets stratified by sex/region, female-versus-male overlap analysis, and central-versus-bottom/peripheral ORA in PP females and males. Includes overlap plots, selected pathways and pathway-to-protein mappings. |
+| [8 — Interaction analysis](Script_8_multiple_factor_age%3Asex_and_age%3Aregion_interaction/) | The `_DE.R` script exports age-by-sex and age-by-region interaction protein tables. The separate `GSEA/` script reads `gsea summary.xlsx` and plots curated interaction enrichment results. |
+| [9 — Regional cell-type analysis](Script_9_region_cell_type_enrichment_with_scRNAseq/) | Two branches: regional protein markers mapped to reference scRNA-seq cell types, and scRNA-seq-derived cell-type marker scores across proteomic regions. Inputs include reference matrices, `expression matrix.xlsx` and `sample metadata.xlsx`. |
+| [10 — Interactive exploration](Script_10_R_Shiny/) | `Script-10_R_Shiny.R` prepares helper data from multiple-factor results. `apps/protein_explorer/` and `apps/volcano_explorer/` display precomputed results without refitting models. |
+
+### Pathway folder guide
+
+**Script 5** separates `age_vs_young_ORA`, `age_vs_young_GSEA`, `female_vs_male_GSEA` and `region_vs_region_GSEA`. Regional summaries cover B–C, B–P, B–T, C–P, C–T and P–T. The age ORA folder contains two plotting-script/workbook pairs: the space-named script reads `ORA summary.xlsx`, while the underscore-named script reads `ORA_summary.xlsx`. Use the workbook referenced by the selected script.
+
+**Script 7** uses the current organization:
+
+```text
+Script_7_mulltiple_factor_pathway/
+├── age vs young in sex and region/
+│   ├── S7_multiple_factor_pathway.R
+│   ├── summary_table3.xlsx
+│   ├── ORA summary aged vs young in sex.xlsx
+│   └── ORA summary aged vs young in region.xlsx
+├── female vs male/
+│   ├── upset and venngraph.R
+│   └── Female vs male DEP in 8 pairwise groups.xlsx
+└── region vs region/
+    ├── central vs bottom female young/
+    ├── central vs bottom male young/
+    ├── central vs peirpheral female young/
+    └── central vs peripheral male young/
 ```
 
-Solid arrows describe intended data handoffs, not automatic file copying. The Script 9 expression workbook is supplied separately; its exact conversion from preprocessing output is not scripted here. Script 2 is a coverage-count branch and is not a prerequisite for modeling.
+Original directory spellings are retained to preserve paths. Each regional ORA folder contains `ORA plot.R`, selected results and a pathway-summary/protein-mapping workbook.
 
-## Module inputs and outputs
-
-| Module | Main inputs | Processing and principal outputs | Downstream use |
-|---|---|---|---|
-| [Script 1](Script_1_protein_number_count/) | `report.pg_matrix.tsv`; UniProt annotation `.RData`; external matrisome annotation; `Sample_index.xlsx` | Protein ID mapping and per-sample counts. Writes `Matrisome_annotation_input.xlsx`, `Protein_counts_summary.xlsx` and `expression_matrix.rds`. The returned external annotation is read as `Matrisome_annotation_output.xlsx`. | Count workbook → 2 and 3; expression matrix → 3. |
-| [Script 2](Script_2_peptide_number_count/) | `Peptide.xlsx`; `Protein_counts_summary.xlsx` / `Raw_table_annotation`; `Sample_metadata.xlsx` | Maps peptide entries to protein/matrisome annotations and exports `Peptide_counts_summary.xlsx`. | Protein/peptide coverage summaries; no direct input to DE models. |
-| [Script 3](Script_3_data_preprocessing/) | `expression_matrix.rds`; `Protein_counts_summary.xlsx`; `Sample_metadata.xlsx` | Filtering, log2 transformation, median normalization, random-forest/QRILC imputation, QC/PCA. Exports observed-value counts, annotated intensity workbook, processed data tables and workspace. | Processed log2 matrix, annotations and metadata → 4, 6, 8; prepared expression data support 9. |
-| [Script 4](Script_4_single_factor_DE/) | Saved processed data tables; annotated intensity workbook / `data_imp`; sample metadata and index | Single-factor DE tables in `Single_factor_DEP_summary.xlsx`; volcano, DEP count and matrisome heatmap PDFs; `Single_factor_DEP_summary_data_summary.RData`. | DE results → external ORA/GSEA summary preparation → 5. |
-| [Script 5](Script_5_single_factor_pathway/) | Precomputed `ORA_summary.xlsx`, age/sex GSEA summaries and regional GSEA workbooks in the respective subfolders | Plots selected GO and Reactome enrichment terms; exports age, sex and region pathway PDFs. These scripts read enrichment results rather than perform all upstream enrichment tests. | Manuscript pathway figures. |
-| [Script 6](Script_6_multiple_factor_DE/) | Processed data tables; annotated intensity workbook; `Sample_metadata.xlsx`; `Real_values_number_in_sample_group.xlsx` | Method 4 mixed-model contrasts. Writes `age.vs.young4.xlsx`, `female.vs.male4.xlsx`, `region.vs.region4.xlsx`, DEP summaries, volcano/boxplot/correlation PDFs and `Script_6_multiple_factor_DE.RData`. | Results → 7 after table preparation; saved workspace → 10. |
-| [Script 7](Script_7_mulltiple_factor_pathway/) | `age vs young/summary_table3.xlsx`; `ORA summary on sex.xlsx`; `ORA summary on region.xlsx`; female/male eight-group workbook; S8 ORA workbook | UpSet figures, exact-intersection and group protein lists, and curated ORA plots. Includes S8, S10, S11, S18/S19 and main Figure 5 ORA plotting sections. | Figure panels and exported protein sets; some Venn assembly is manual. |
-| [Script 8](Script_8_multiple_factor_age%3Asex_and_age%3Aregion_interaction/) | Same processed matrix, annotations, observed-value counts and sample metadata used for multiple-factor analysis; `GSEA/gsea summary.xlsx` | Age-by-sex and age-by-region interaction tables and volcano PDFs; separate script plots curated interaction GSEA summaries. | Interaction figures and enrichment interpretation. |
-| [Script 9](Script_9_region_cell_type_enrichment_with_scRNAseq/) | Male/female reference scRNA-seq MTX, genes and barcodes (`GSM3926541`, `GSM3926542`); `expression matrix.xlsx`; `sample metadata.xlsx` | Two branches: regional protein enrichment in scRNA-seq cell types; and cell-type marker scores across proteomic regions. Exports marker CSVs, region-specific protein workbooks, regional score-model CSVs and plot objects. Several PDF files are supplied but are not automatically exported by the current scripts. | Cell-type interpretation and associated figures. |
-| [Script 10](Script_10_R_Shiny/) | `Script_6_multiple_factor_DE.RData` from 6 | Preparation script writes age/sex/region protein-explorer helpers and volcano comparison-list helper. Two app folders contain their own copies and `app.R`. | Interactive exploration and downloadable results. |
-
-## Concrete handoffs between folders
-
-| Producer | File / object | Consumer and action |
-|---|---|---|
-| 1 | `Protein_counts_summary.xlsx`, sheet `Raw_table_annotation` | Copy to 2 and 3. Existing workbook copies are supplied. |
-| 1 | `expression_matrix.rds` | Copy to 3 after generation. This file is currently absent from the supplied folders. |
-| 3 | `UW.Madison.rat.lung.proteomics_data tables_<date>.RData` | Copy to 4, 6 and 8. Contains `data_table`, annotations and sample information; DE scripts use `data_table$data_imp`. |
-| 3 | `UW.Madison.rat.lung.proteomics_DIANN_protein intensity_<date>.xlsx` | Copy to 4, 6 and 8; annotation columns are read from `data_imp`. |
-| 3 | `Real_values_number_in_sample_group.xlsx` | Copy to 6 and 8 for observed-value eligibility. Counts precede imputation. |
-| 4 | `Single_factor_DEP_summary.xlsx` | Source for single-factor result exploration and external enrichment input preparation. The curated tables in 5 are a separate handoff, not automatic output of 4. |
-| 6 | Three Method 4 comparison workbooks and age summary objects | Prepare/copy the comparison-summary and curated ORA inputs expected by 7. The supplied Script 7 workbooks should not be assumed to regenerate automatically when 6 is run. |
-| 6 | `Script_6_multiple_factor_DE.RData` | Copy to 10 before running `Script-10_R_Shiny.R`. |
-| 8 | Interaction result workbooks | External enrichment and curation → `GSEA/gsea summary.xlsx` → interaction pathway plots. |
-| 10 | `helper age.RData`, `helper sex.RData`, `helper region.RData` | Copy into `apps/protein_explorer/`. |
-| 10 | `helper volcano plot.RData` | Copy into `apps/volcano_explorer/`. |
-
-The archived preprocessing outputs use **2026-09-15** filenames. Script 3 generates names using `Sys.Date()`, while downstream scripts currently read fixed filenames. Update the downstream references or deliberately preserve the chosen snapshot filenames when rerunning; do not mix outputs from different runs.
-
-Sample metadata filenames differ across modules (`Sample_index.xlsx`, `Sample_metadata.xlsx`, and `sample metadata.xlsx`). Use the file expected by the relevant script. Sample order and protein-ID alignment must be preserved across expression data, annotations and metadata.
+**Script 8** separates interaction estimates from enrichment plotting. Its current GSEA script plots age-by-sex GO/Reactome, B–P GO, C–P GO and C–T GO/Reactome summaries. It does not plot a C–P Reactome result set. These interaction results are distinct from Script 5's regional main-effect comparisons.
 
 ## Running the analysis
 
-1. Open the required R script in RStudio and use its directory as the working directory. Most scripts use `rstudioapi::getSourceEditorContext()`; these lines need adapting for unattended `Rscript` execution. Some scripts assume an already configured working directory.
-2. Resolve the input requirements listed below before starting a full rerun. The included processed snapshots allow inspection of later stages without rerunning imputation.
-3. Follow the branches in the workflow diagram. Perform the documented external annotation/enrichment and curation steps before running the corresponding plotting modules.
-4. A script may write into the same directory as its archived outputs. Use a separate working copy if retaining the archived results for comparison.
+1. Work in a copy to preserve archived outputs: scripts commonly write into their own folder.
+2. Open the desired script in RStudio and inspect input filenames, worksheet names and package imports. Most scripts use `rstudioapi::getSourceEditorContext()`; adapt the working-directory setup for command-line execution.
+3. Use archived processed snapshots for downstream inspection, or rerun preprocessing and explicitly refresh downstream copies.
+4. Complete external annotation/enrichment and prepare the expected summary workbooks before running pathway plots.
+5. Preserve sample order, protein-ID alignment, contrast direction and run provenance.
 
-The Shiny applications can be launched independently from the repository root:
+### Main data handoffs
+
+| From | Input required by the next stage |
+|---|---|
+| Script 1 → Scripts 2 and 3 | `Protein_counts_summary.xlsx`, including `Raw_table_annotation`. Script 3 reads intensities directly from this worksheet; it does not require `expression_matrix.rds`. |
+| Script 3 → Scripts 4, 6 and 8 | `UW.Madison.rat.lung.proteomics_data tables_<date>.RData` and `UW.Madison.rat.lung.proteomics_DIANN_protein intensity_<date>.xlsx`. |
+| Script 3 → Scripts 6 and 8 | `Real_values_number_in_sample_group.xlsx` for eligibility based on observed, pre-imputation values. |
+| Scripts 4 and 6 → Scripts 5 and 7 | DE results followed by external enrichment and/or preparation of comparison and pathway summaries. This handoff is not automated. |
+| Script 8 DE → Script 8 GSEA plots | Interaction ranking results followed by external GSEA and curation of `GSEA/gsea summary.xlsx`. |
+| Script 6 → Script 10 | `Script_6_multiple_factor_DE.RData`; after helper preparation, refresh matching copies inside each app folder. |
+
+Supplied preprocessing snapshots are dated **2026-09-15**. Script 3 writes names using `Sys.Date()`, whereas downstream scripts read fixed snapshot names. Update references together when rerunning. Metadata filenames differ by module; `Sample_index.xlsx`, `Sample_metadata.xlsx` and `sample metadata.xlsx` are not interchangeable simply by name.
+
+### Dependencies and Shiny applications
+
+Use each script's package imports as its dependency list. Analyses use packages including `readxl`, `rio`, `writexl`, `openxlsx`, `dplyr`, `tidyr`, `ggplot2`, `lme4`, `lmerTest`, `emmeans`, `NormalyzerDE`, `missForest`, `imputeLCMD`, `Matrix` and `Seurat`, plus module-specific plotting packages. Some packages require Bioconductor installation.
+
+The [Shiny environment record](Script_10_R_Shiny/sessionInfo.txt) documents that component, not a locked environment for all analyses. No project-wide `renv.lock` is supplied.
+
+From the repository root in R:
 
 ```r
 install.packages(c("shiny", "ggplot2", "DT", "dplyr", "tidyr", "ggtext"))
 shiny::runApp("Script_10_R_Shiny/apps/protein_explorer")
-# Stop the first application before launching the second.
+# Stop the first app before launching the second.
 shiny::runApp("Script_10_R_Shiny/apps/volcano_explorer")
 ```
 
-See [the Shiny README](Script_10_R_Shiny/README.md) for data versions, comparisons, thresholds and downloads. Its `sessionInfo.txt` records the local Shiny/preparation environment, not a validated environment for every Script 1–9 dependency. No full-project `renv.lock` is supplied yet.
+Bundled helpers allow viewing archived results without rerunning model fitting. See the [Shiny README](Script_10_R_Shiny/README.md) for comparisons, precision and downloads. Author-provided hosted links: [protein explorer](https://feiwang-outobi.shinyapps.io/Protein-combined-analysis3/) and [volcano explorer](https://feiwang-outobi.shinyapps.io/DEP-volcano-plot3/).
 
-## Reproducibility status and known gaps
+## Interpreting enrichment tables
 
-The scripts were copied without changing analysis code. Static parsing is not an end-to-end execution test. See [syntax results](docs/SYNTAX_CHECK.md), the [file-I/O source index](docs/FILE_IO_INDEX.md), and [missing literal input paths](docs/MISSING_INPUTS.md).
+ORA uses selected protein lists; GSEA uses ranked inputs. Plotting modules consume prepared enrichment tables rather than rerun enrichment services. Preserve ranking direction, annotation version and run settings when regenerating results.
 
-- **Script 1:** its referenced DIA-NN matrix, UniProt annotation workspace and externally returned annotation filename are absent from its supplied directory. `Matrisome_annotation_table.xlsx` is present, but it has not been asserted equivalent to the missing files. `import()` is used without loading `rio`. The `!!!` immediately before `tables_list <- list(...)` is executable R syntax, not a comment, and needs review before running this section.
-- **Script 3:** `expression_matrix.rds` is absent, and the PCA section sources `ggbiplot.r` from a machine-specific `T:/...` path. The original imputation did not set a random seed; use the archived imputed outputs for the fixed downstream snapshot. A rerun may differ numerically.
-- **Script 4:** some later sections still read `DE summary1.xlsx` instead of the earlier `Single_factor_DEP_summary.xlsx` export. Check the missing-input report before execution.
-- **Scripts 5, 7 and interaction GSEA in 8:** input workbooks include precomputed or manually curated enrichment results. Do not describe these plotting scripts as a fully automated enrichment pipeline. Some final figure assembly and Venn diagrams were performed separately.
-- **Script 7:** comparison workbooks such as `summary_table3.xlsx` are supplied intermediates; the full export/curation link from Script 6 is not automated in the current files.
-- **Script 9:** `region_protein_marker_in_scRNAseq _cell_type.R` has pasted console `+` prompts near line 1174 and currently fails parsing. The other Script 9 branch parses. The supplied input tables and reference matrices are included, but both branches still need execution review.
-- **Portability:** several Script 8 names contain `:` and some plot filenames contain `<` or `>`. These existing names were preserved; Windows-compatible naming remains to be addressed before a cross-platform release.
+Pathway summaries contain pathway-level statistics. Protein-mapping tables identify associated input proteins; GSEA leading-edge tables identify the contributing subset. If leading-edge members come from a later rerun but statistics are retained from an earlier analysis, retain that provenance rather than imply an exact reconstruction of the original run. Interpret NES direction against the ranking contrast, particularly for interactions.
 
-Age labels vary between annotations: many scripts use “Aged”/“Young”, while Script 3 notes A = young adult and Y = peripubertal. Interpret these labels using the manuscript and sample metadata; biological labels have not been rewritten during archiving.
+## Reproducibility notes
 
-## Included data and large-file handling
+Checked on **2026-09-30**: all **23 R files** passed syntax-only parsing. This is not an end-to-end execution test; the analyses were not rerun for this documentation update.
 
-The repository includes the available smaller input tables, reference count matrices, intermediate results and figure files alongside the scripts. The [added-file manifest](docs/added_files_manifest.csv) records file sizes and SHA-256 checksums for Scripts 1–9.
+- **Script 1:** the raw matrix, UniProt workspace and returned annotation are now included. Its `import()` calls still require `rio` to be loaded or namespace-qualified.
+- **Script 3:** the PCA section retains a machine-specific `T:/.../ggbiplot.r` source path. Imputation has no explicit random seed; reruns may differ from saved values.
+- **Script 4:** references `Sample_metadata.xlsx` although its directory supplies `Sample_index.xlsx`; later plotting sections also reference `DE summary1.xlsx`. Resolve the required filenames and worksheet layouts before rerunning.
+- **Script 7:** rerunning Script 6 does not automatically refresh supplied comparison/intersection and enrichment workbooks.
+- **Script 9:** both scripts now parse, but model fits, cell-type assignments and figure exports still require execution-level validation.
+- **Portability:** existing names containing `:`, `<` or `>` need adjustment for Windows.
 
-Two Script 9 saved workspaces, approximately 764 MB and 761 MB, were **not uploaded**. Their scripts do not load these snapshots directly; their reference matrices and smaller supporting inputs are included. Original files remain in the authors' local working directories. Exact paths, sizes and checksums are in [the large-file manifest](docs/large_files_not_in_git.csv). Separate archival deposition is pending; the manifest is not a download link. GitHub blocks ordinary Git files larger than 100 MiB ([GitHub documentation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github)).
+The older [syntax report](docs/SYNTAX_CHECK.md), [file-I/O index](docs/FILE_IO_INDEX.md) and [missing-input report](docs/MISSING_INPUTS.md) are historical snapshots and may contain resolved issues. Current scripts and this updated inventory take precedence.
 
-Local histories, operating-system files, Excel lock files and `rsconnect` deployment records are excluded. Script folders retain existing names and are separate from the authors' working copies.
+## Archive and reuse
 
-## Hosted applications
+Supporting inputs, processed snapshots, pathway workbooks and figures remain alongside their scripts. The [added-file manifest](docs/added_files_manifest.csv) records a historical import, not every subsequent revision.
 
-- https://feiwang-outobi.shinyapps.io/DEP-volcano-plot3/
-- https://feiwang-outobi.shinyapps.io/Protein-combined-analysis3/
+Two large Script 9 saved workspaces are excluded from Git; the [large-file manifest](docs/large_files_not_in_git.csv) records their sizes and checksums but is not a download link. Local histories, temporary Excel files and deployment records are also excluded.
 
-The authors reported completing deployment of the current applications. Hosted behavior has not been independently revalidated as part of this repository update.
-
-## Release, citation and license
-
-The planned manuscript release is `v1.0.0`, after the remaining input gaps, execution checks and documentation have been resolved. No release or Zenodo DOI has been issued. Citation metadata and code/data reuse terms will be added before public release; no license grant is implied at this stage.
+This checkout does not include a license file or citation metadata. Formal release, archival deposition and reuse terms should be finalized with the manuscript; repository availability alone does not imply a license grant.
