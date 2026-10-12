@@ -266,7 +266,7 @@ for (i in 1:3859) {
 # Step 7: Write output workbooks -----------------------------------------------
 
 # Collect count tables and the annotated intensity table as separate worksheets.
-# The four count sheets are used for the protein-count bar plots.
+# The four count sheets are used for the protein-count bar plots in figure S2.
 
 tables_list <- list(
   "Total_proteins" = id.table.wide,
