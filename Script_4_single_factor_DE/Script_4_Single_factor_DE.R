@@ -1,50 +1,106 @@
+# =============================================================================
+# Script 4: Single-factor differential abundance (age, sex, region main effects)
+# =============================================================================
+#
+# Purpose:
+#   For each of the 3,600 filtered and imputed protein groups from Script_3,
+#   fit a linear mixed model with additive fixed effects of age, sex and lung
+#   region and a random intercept per animal:
+#       Protein ~ Age + Sex + Region + (1 | Subject)
+#   and test the main effects with emmeans pairwise contrasts. No interaction
+#   terms or subgroup-specific models are fitted (see Script_6 / Script_8).
+#   Then draw volcano plots, DEP count bar plots, and a heatmap / bar plot of
+#   age-associated matrisome proteins.
+#
+# Contrast directions (estimate = log2 difference, first level minus second):
+#   - Age:    Aged - Young     (A = young adult minus Y = peripubertal;
+#                               labelled "Aged" / "Young" in the metadata)
+#   - Sex:    Female - Male
+#   - Region: Bottom - Central, Bottom - Peripheral, Bottom - Top,
+#             Central - Peripheral, Central - Top, Peripheral - Top
+#   p-values are unadjusted per protein and BH-adjusted across the 3,600
+#   proteins separately for each comparison.
+#
+# Inputs (all in this folder):
+#   - UW.Madison.rat.lung.proteomics_data_tables.RData  (output of Script_3)
+#       data_table$data_imp: imputed, normalized log2 intensities
+#       (3,600 proteins x S1-S96); info_table: sample metadata
+#       (Sample.ID, Sample.Group, Sample.PID, Sample.Age, Sample.Region,
+#       Sample.Sex, ...) in S1-S96 order.
+#   - UW.Madison.rat.lung.proteomics_DIANN_protein_intensity.xlsx
+#       (output of Script_3)
+#       Sheet "data_imp": only the 7 annotation columns (Uniprot.ID,
+#       Uniprot.name, Gene.symbol, Description, Mol.Weight,
+#       Matrisome.Category, Matrisome.Sub.category) are used. Rows are in the
+#       same order as data_table$data_imp.
+#   - Sample_index.xlsx
+#       Sample order (column Index) used for the heatmap columns,
+#       grouped by experimental group.
+#
+# Outputs (written to this folder):
+#   - Single_factor_DEP_summary.xlsx
+#       8 sheets ("age", "sex", "bot vs central", "bot vs peri", "bot vs top",
+#       "central vs peri", "central vs top", "peri vs top"). Each sheet: the 7
+#       annotation columns + contrast, estimate, SE, df, t.ratio, p.value,
+#       p.value.adjusted for all 3,600 proteins (no cutoff applied).
+#   - volcano_plots_all_comparisons.pdf   (Figures 2b, 6b, 6c, S7a, S13)
+#   - DEP_numbers_barplot.pdf             (Figure S12a)
+#   - matrisome_DEP_numbers_barplot.pdf   (Figure S12b)
+#   - matrisome_DEP_heatmap_and_barplot.pdf  (Figure 2c)
+#   - Single_factor_DEP_summary_data_summary.RData
+#       Full R workspace, including intermediate objects.
+#
+# DEP definition: FDR (p.value.adjusted) < 0.05 and |estimate| > log2(1.5)
+#   (= 0.5849625). Matrisome proteins = rows with a non-missing
+#   Matrisome.Sub.category (read_excel reads blank labels as NA).
+#
+# Run in RStudio: setwd() below requires an interactive RStudio session.
+# Model fitting takes several minutes (3 x 3,600 lmer fits).
+# =============================================================================
+
 # Load required packages.
-library(limma)
+# rio: export(); readxl: read_excel(); lme4 + lmerTest: lmer();
+# emmeans: emmeans() / contrast(); dplyr: bind_rows();
+# ggplot2 + ggrepel: volcano and bar plots; pheatmap + RColorBrewer: heatmap.
 library(rio)
-library(tidyr)
 library(readxl)
 library(lme4)
 library(lmerTest)
-library(reshape2)
 library(emmeans)
-library(Rmisc)
-library(stringr)
 library(dplyr)
-library(multcomp)
 library(ggplot2)
 library(ggrepel)
 library(pheatmap)
 library(RColorBrewer)
 
 
-# Differential abundance analysis of age, sex, and regional main effects.
-# Model: additive fixed effects with a subject-specific random intercept.
-# No interaction terms or subgroup-specific models are fitted.
-# Inputs: saved imputed data, annotated intensity workbook, and sample metadata.
-# Outputs: comparison tables, volcano plots, count bar plots, a heatmap,
-# an effect-size bar plot, and an R workspace.
-# Set the working directory to this script's folder in RStudio.
+# Set the working directory to this script's folder (RStudio only).
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 
-# Load the saved imputed matrices and sample information.
-load("UW.Madison.rat.lung.proteomics_data tables_2026-09-15.RData")
+# Step 1: Load data and build the model table ----------------------------------
+
+# Load the saved matrices (data_table), annotations and sample information
+# (info_table) from Script_3.
+load("UW.Madison.rat.lung.proteomics_data_tables.RData")
 
 
 # Read the annotated imputed-intensity worksheet for output annotations.
-# The first seven columns are assumed to contain protein annotations.
-data_imp <- read_excel("UW.Madison.rat.lung.proteomics_DIANN_protein intensity_2026-09-15.xlsx",
+# The first seven columns contain protein annotations; they are attached to
+# the model results by row position below.
+data_imp <- read_excel("UW.Madison.rat.lung.proteomics_DIANN_protein_intensity.xlsx",
   sheet = "data_imp"
 )
 
 
 # Use the saved imputed matrix for model fitting.
-# Protein rows must match the annotation worksheet in the same order.
+# data7: 3,600 proteins (rows, Uniprot.ID) x 96 samples (S1-S96).
+# Protein rows match the annotation worksheet in the same order.
 data7 <- data_table$data_imp
 
 
 # Extract experimental variables from the saved sample information.
-# The models below use the separately imported workdata table.
+# These vectors are not used below; the models use the workdata table.
 f <- info_table$Sample.Group
 Region <- info_table$Sample.Region
 Age <- info_table$Sample.Age
@@ -52,14 +108,25 @@ Sex <- info_table$Sample.Sex
 ID <- as.factor(info_table$Sample.PID)
 
 
-# Read model metadata in the same order as the sample columns in data7.
-# Column 5 must be the Protein response column; Subject identifies each animal.
-workdata <- read_excel("Sample_metadata.xlsx")
+# Build the model table from info_table (96 rows in S1-S96 order, the same
+# order as the sample columns in data7).
+# Columns: Subject (animal ID; each animal contributes 4 regions), Age,
+# Region, Sex, and Protein (response; filled with one protein per loop
+# iteration). Column 5 must be the Protein column.
+# Factor levels are alphabetical, which sets the contrast directions above.
+workdata <- data.frame(
+  Subject = info_table$Sample.PID,
+  Age = as.character(info_table$Sample.Age),
+  Region = as.character(info_table$Sample.Region),
+  Sex = as.character(info_table$Sample.Sex),
+  Protein = NA_real_
+)
 
 
-# Age main-effect analysis -----------------------------------------------
+# Step 2: Age main effect ------------------------------------------------------
+
 # Fit the additive model for each of 3,600 proteins, adjusting for sex and region.
-i = 1
+i = 1   # not needed; reset by the for loop
 age_contrast_list <- list()
 for (i in 1:3600) {
   # Assign the current protein intensities to the response column.
@@ -68,13 +135,15 @@ for (i in 1:3600) {
   # Account for repeated regional measurements within each subject.
   res <- lmer(Protein ~ Age + Sex + Region + (1 | Subject), data = workdata)
 
-  # Request marginal means and treatment-versus-control contrasts.
+  # Estimated marginal means for Age (unadjusted).
+  # trt.vs.ctrl contrasts are also computed but not used: contrast() below
+  # applies to the marginal means.
   age_emmeans_result <- emmeans(res, spec = trt.vs.ctrl ~ Age, adjust = "none")
 
-  # Apply the pairwise contrast operation to the returned emmeans object.
+  # Pairwise contrast of the marginal means: Aged - Young.
   age_pairwise_contrasts <- contrast(age_emmeans_result, method = "pairwise")
 
-  # Store the contrast summary for this protein.
+  # Store the contrast summary for this protein (one row).
   age_contrast_list[[i]] <- as.data.frame(summary(age_pairwise_contrasts))
 }
 
@@ -90,8 +159,9 @@ row.names(age_contrast_results) <- rownames(data7)
 age.vs.young <- cbind(data_imp[c(1:7)], age_contrast_results)
 
 
-# Sex main-effect analysis -----------------------------------------------
-# Fit the additive model for each of 3,600 proteins, adjusting for age and region.
+# Step 3: Sex main effect ------------------------------------------------------
+
+# Fit the same model for each of 3,600 proteins, adjusting for age and region.
 i = 1
 sex_contrast_list <- list()
 for (i in 1:3600) {
@@ -101,13 +171,13 @@ for (i in 1:3600) {
   # Account for repeated regional measurements within each subject.
   res <- lmer(Protein ~ Age + Sex + Region + (1 | Subject), data = workdata)
 
-  # Request marginal means and treatment-versus-control contrasts.
+  # Estimated marginal means for Sex (unadjusted).
   sex_emmeans_result <- emmeans(res, spec = trt.vs.ctrl ~ Sex, adjust = "none")
 
-  # Apply the pairwise contrast operation to the returned emmeans object.
+  # Pairwise contrast of the marginal means: Female - Male.
   sex_pairwise_contrasts <- contrast(sex_emmeans_result, method = "pairwise")
 
-  # Store the contrast summary for this protein.
+  # Store the contrast summary for this protein (one row).
   sex_contrast_list[[i]] <- as.data.frame(summary(sex_pairwise_contrasts))
 }
 
@@ -122,8 +192,9 @@ row.names(sex_contrast_results) <- rownames(data7)
 female.vs.male <- cbind(data_imp[c(1:7)], sex_contrast_results)
 
 
-# Regional main-effect analysis ------------------------------------------
-# Fit the additive model for each of 3,600 proteins, adjusting for age and sex.
+# Step 4: Region main effect ---------------------------------------------------
+
+# Fit the same model for each of 3,600 proteins, adjusting for age and sex.
 i = 1
 region_contrast_list <- list()
 for (i in 1:3600) {
@@ -133,24 +204,29 @@ for (i in 1:3600) {
   # Account for repeated regional measurements within each subject.
   res <- lmer(Protein ~ Age + Sex + Region + (1 | Subject), data = workdata)
 
-  # Request marginal means and treatment-versus-control contrasts.
+  # Estimated marginal means for Region (unadjusted).
   region_emmeans_result <- emmeans(res, trt.vs.ctrl ~ Region, adjust = "none")
 
-  # Apply the pairwise contrast operation to the returned emmeans object.
+  # All 6 pairwise contrasts among the 4 regions (unadjusted).
   region_pairwise_contrasts <- contrast(region_emmeans_result, method = "pairwise")
 
-  # Store the contrast summary for this protein.
+  # Store the contrast summary for this protein (six rows).
   region_contrast_list[[i]] <- as.data.frame(summary(region_pairwise_contrasts))
 }
 
 
-# Combine regional contrasts from all proteins.
+# Combine regional contrasts from all proteins (3,600 x 6 rows).
 region_contrast_results <- bind_rows(region_contrast_list)
 
 
+# Split the regional results into the six comparisons and BH-adjust each
+# across proteins.
+# Row selection assumes six contrasts per protein in this order (verified
+# against the contrast labels of the reported run):
+#   1 Bottom - Central, 2 Bottom - Peripheral, 3 Bottom - Top,
+#   4 Central - Peripheral, 5 Central - Top, 6 Peripheral - Top
+
 # Extract bottom versus central results and adjust across proteins.
-# Row selection assumes six contrasts per protein in the order used below.
-# Verify this order against the returned contrast labels and factor levels.
 sequence1 <- seq(from = 1, to = 3600 * 6, by = 6)
 comparison.bottom.vs.central <- region_contrast_results[sequence1, ]
 comparison.bottom.vs.central$p.value.adjusted <- p.adjust(comparison.bottom.vs.central$p.value, method = "BH")
@@ -203,6 +279,8 @@ region.vs.region <- list(
 )
 
 
+# Step 5: Write the result workbook --------------------------------------------
+
 # Collect age, sex, and regional results into eight worksheets.
 # These tables retain all tested proteins; no significance cutoff is applied here.
 single_factor_DEP_summary <- list(
@@ -220,11 +298,19 @@ single_factor_DEP_summary <- list(
 # Export the comparison results and adjusted p-values.
 export(single_factor_DEP_summary, file = "Single_factor_DEP_summary.xlsx")
 
+# The plots and counts below read the results back from the workbook,
+# so blank matrisome labels become NA.
 age_DE <- read_excel("Single_factor_DEP_summary.xlsx", sheet = "age")
 
 
-# Age volcano plot -----------------------------------------------------
+# Step 6: Volcano plots --------------------------------------------------------
+# For each comparison:
+#   res1 = all proteins (gray open circles)
+#   res2 = DEPs, FDR < 0.05 and |estimate| > log2(1.5) (filled, colored by estimate)
+#   res3 = matrisome DEPs (black outline + gene symbol label)
+# Dashed red lines: FDR = 0.05 and estimate = +/- log2(1.5).
 
+# Age volcano plot.
 res1 <- age_DE
 res1$LogPValue <- (-1) * log10(res1$p.value.adjusted)
 
@@ -232,7 +318,7 @@ res2 <- res1[res1$p.value.adjusted < 0.05, ]
 res2 <- res2[abs(res2$estimate) > 0.5849625, ]
 res3 <- res2[!is.na(res2$Matrisome.Sub.category), ] # Retain non-missing matrisome subcategory annotations.
 
-fc_cut <- 1.5 # Record the fold-change cutoff.
+fc_cut <- 1.5 # Record the fold-change cutoff (not used below).
 
 p1 <- ggplot(res1, aes(estimate, LogPValue))
 p1 <- p1 + geom_point(shape = 1, color = "gray")
@@ -248,8 +334,7 @@ p1 <- p1 + theme_bw(base_size = 16) + labs(x = "estimate", y = "-Log10(FDR)") + 
 plot(p1) # Display the age volcano plot (Figure 2b).
 
 
-# Sex volcano plot -----------------------------------------------------
-
+# Sex volcano plot.
 sex_DE <- read_excel("Single_factor_DEP_summary.xlsx", sheet = "sex")
 res1 <- sex_DE
 res1$LogPValue <- (-1) * log10(res1$p.value.adjusted)
@@ -258,7 +343,7 @@ res2 <- res1[res1$p.value.adjusted < 0.05, ]
 res2 <- res2[abs(res2$estimate) > 0.5849625, ]
 res3 <- res2[!is.na(res2$Matrisome.Sub.category), ] # Retain non-missing matrisome subcategory annotations.
 
-fc_cut <- 1.5 # Record the fold-change cutoff.
+fc_cut <- 1.5 # Record the fold-change cutoff (not used below).
 
 p2 <- ggplot(res1, aes(estimate, LogPValue))
 p2 <- p2 + geom_point(shape = 1, color = "gray")
@@ -275,15 +360,17 @@ plot(p2) # Display the sex volcano plot (Figure S7a).
 
 
 # Export age, sex, and regional volcano plots to a multipage PDF.
+# Page order: age, sex, then the six regional comparisons.
 # Figure references: 2b, 6b, 6c, S7a, and S13.
-pdf("20260915_volcano_plots_all_comparisons.pdf", width = 12, height = 8)
+pdf("volcano_plots_all_comparisons.pdf", width = 12, height = 8)
 
 plot(p1)
 
 plot(p2)
 
 
-# Map regional comparison names to result worksheets for volcano plotting.
+# Map regional comparison names to result worksheets for volcano plotting
+# (also used for the DEP counts below).
 region_comparisons <- list(
   "bottom.vs.central" = "bot vs central",
   "bottom.vs.peri" = "bot vs peri",
@@ -293,6 +380,7 @@ region_comparisons <- list(
   "peri.vs.top" = "peri vs top"
 )
 
+# Regional volcano plots, same layout as above (one page per comparison).
 for (comparison_name in names(region_comparisons)) {
   res1 <- read_excel("Single_factor_DEP_summary.xlsx", sheet = region_comparisons[[comparison_name]])
   res1$LogPValue <- (-1) * log10(res1$p.value.adjusted)
@@ -322,9 +410,11 @@ for (comparison_name in names(region_comparisons)) {
 dev.off()
 
 
-# Differentially abundant protein counts --------------------------------
+# Step 7: Count differentially abundant proteins -------------------------------
+
 # Count proteins with FDR < 0.05, without a fold-change threshold.
-# Positive and negative estimates define the two directions of each contrast.
+# Positive and negative estimates define the two directions of each contrast
+# ("up" = higher in the first level, e.g. Aged in Aged - Young).
 count_DEPs <- function(data) {
   total_sig <- sum(data$p.value.adjusted < 0.05)
   up_reg <- sum(data$p.value.adjusted < 0.05 & data$estimate > 0)
@@ -346,7 +436,7 @@ count_DEPs <- function(data) {
 }
 
 
-# Initialize the table of counts across comparisons.
+# Initialize the table of counts across comparisons (FDR only; printed, not plotted).
 dep_counts <- data.frame()
 
 
@@ -372,9 +462,9 @@ dep_counts <- rbind(
 )
 
 
-# Add counts for regional comparisons from the specified workbook.
+# Add counts for the six regional comparisons from the result workbook.
 for (comparison_name in names(region_comparisons)) {
-  data <- read_excel("DE summary1.xlsx", sheet = region_comparisons[[comparison_name]])
+  data <- read_excel("Single_factor_DEP_summary.xlsx", sheet = region_comparisons[[comparison_name]])
   counts <- count_DEPs(data)
   dep_counts <- rbind(
     dep_counts,
@@ -386,7 +476,8 @@ for (comparison_name in names(region_comparisons)) {
 }
 
 
-# Display the count summary.
+# Display the count summary
+# (reported run: age 1,335, sex 26, regions 14-159 proteins at FDR < 0.05).
 print(dep_counts)
 
 
@@ -419,7 +510,8 @@ count_DEPs_FC <- function(data, fc_threshold = 0.5849625) {
 }
 
 
-# Initialize the table of counts using both significance and effect-size criteria.
+# Initialize the table of counts using both significance and effect-size criteria
+# (used for the bar plots below).
 dep_counts_FC <- data.frame()
 
 
@@ -449,9 +541,9 @@ dep_counts_FC <- rbind(
 )
 
 
-# Add counts for regional comparisons from the specified workbook.
+# Add counts for the six regional comparisons from the result workbook.
 for (comparison_name in names(region_comparisons)) {
-  data <- read_excel("DE summary1.xlsx", sheet = region_comparisons[[comparison_name]])
+  data <- read_excel("Single_factor_DEP_summary.xlsx", sheet = region_comparisons[[comparison_name]])
   counts <- count_DEPs_FC(data, fc_cutoff)
   dep_counts_FC <- rbind(
     dep_counts_FC,
@@ -463,11 +555,13 @@ for (comparison_name in names(region_comparisons)) {
 }
 
 
-# Display the count summary.
+# Display the count summary
+# (reported run: age 208, sex 16, regions 13-104 DEPs).
 print(dep_counts_FC)
 
 
-# Plot differential-abundance counts ------------------------------------
+# Step 8: DEP count bar plots --------------------------------------------------
+
 # Reshape counts into positive and negative contrast directions for plotting.
 plot_data <- data.frame(
   comparison = rep(dep_counts_FC$comparison, 2),
@@ -494,7 +588,7 @@ plot_data$comparison <- factor(plot_data$comparison,
 p_dep <- ggplot(plot_data, aes(x = comparison, y = count, fill = regulation)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   scale_fill_manual(values = c("Up-regulated" = "red", "Down-regulated" = "blue")) +
-  scale_y_continuous(limits = c(0, 140), breaks = seq(0, 120, by = 20)) + # Use a fixed y-axis range.
+  scale_y_continuous(limits = c(0, 140), breaks = seq(0, 120, by = 20)) + # Fixed y-axis range (largest count in the reported run: 121).
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
@@ -513,7 +607,7 @@ p_dep <- ggplot(plot_data, aes(x = comparison, y = count, fill = regulation)) +
 
 
 # Export the protein-count bar plot (Figure S12a).
-pdf("20260915_DEP_numbers_barplot.pdf", width = 10, height = 6)
+pdf("DEP_numbers_barplot.pdf", width = 10, height = 6)
 print(p_dep)
 dev.off()
 
@@ -561,16 +655,17 @@ p_dep_matrisome <- ggplot(plot_data_matrisome, aes(x = comparison, y = count, fi
 
 
 # Export the matrisome-count bar plot (Figure S12b).
-pdf("20260915_matrisome_DEP_numbers_barplot.pdf", width = 10, height = 6)
+pdf("matrisome_DEP_numbers_barplot.pdf", width = 10, height = 6)
 print(p_dep_matrisome)
 dev.off()
 
 
-# Matrisome heatmap and effect-size bar plot -----------------------------
+# Step 9: Age-associated matrisome heatmap and effect-size bar plot ------------
+
 # Select age-associated matrisome proteins with FDR < 0.05
-# and absolute log2 fold change > 0.5849625.
-# Define the experimental-group order.
-# The actual heatmap column order is read from Sample_index.xlsx below.
+# and absolute log2 fold change > 0.5849625 (35 proteins in the reported run).
+# group_order is not used; the actual heatmap column order is read from
+# Sample_index.xlsx below.
 group_order <- c("ABF", "ACF", "APF", "ATF", "ABM", "ACM", "APM", "ATM", "YBF", "YCF", "YPF", "YTF", "YBM", "YCM", "YPM", "YTM")
 
 matrisome_list <- c()
@@ -583,14 +678,17 @@ res2 <- res2[(res2$estimate > 0.5849625) | (res2$estimate < (-1) * 0.5849625), ]
 res3 <- res2[!is.na(res2$Matrisome.Sub.category), ]
 matrisome_list <- c(res3$Uniprot.ID, matrisome_list) # Collect selected protein identifiers.
 
+# Sample_index.xlsx lists the 96 samples grouped by experimental group;
+# Index gives each sample's column number (S1-S96) in data7.
 sample_group <- read_excel("Sample_index.xlsx")
 sample_group_order <- unlist(sample_group$Index)
 
+# Heatmap matrix: selected proteins x 96 samples in Sample_index order.
 hm_df_new <- data7[match(matrisome_list, rownames(data7)), ]
 hm_df_new <- hm_df_new[, sample_group_order]
 
 
-# Scale each protein row and cluster rows by correlation distance.
+# Scale each protein row (z-score) and cluster rows by correlation distance.
 # Keep sample columns in the supplied order.
 p8 <- pheatmap(
   hm_df_new,
@@ -606,6 +704,7 @@ p8 <- pheatmap(
 
 
 # Extract the clustered protein order and match it to the age results.
+# mean_table columns: Gene.symbol (column 3) and estimate (column 9).
 gene_order <- p8$tree_row$order
 ordered_genes <- rownames(hm_df_new)[gene_order]
 ordered_genes_table <- age_DE[match(ordered_genes, age_DE$Uniprot.ID), ]
@@ -613,14 +712,16 @@ mean_table <- ordered_genes_table[c(3, 9)]
 mean_table$type <- ifelse(mean_table$estimate > 0, "Positive", "Negative")
 
 
-# Reverse the clustered order for the horizontal effect-size bar plot.
+# Reverse the clustered order for the horizontal effect-size bar plot,
+# so that bars line up with the heatmap rows after coord_flip().
 # Preserve this order in the gene-symbol factor levels.
 
 mean_table <- mean_table[rev(seq_len(nrow(mean_table))), ]
 mean_table$Gene.symbol <- factor(mean_table$Gene.symbol, levels = mean_table$Gene.symbol)
 
 
-# Plot model estimates on the log2 intensity scale, colored by sign.
+# Plot model estimates (Aged - Young, log2 scale), colored by sign.
+# The y-axis is fixed to -2..2 (estimates range -1.69 to 1.69 in the reported run).
 p9 <- ggplot(mean_table, aes(x = Gene.symbol, y = estimate, fill = type)) +
   geom_col() +
   scale_fill_manual(
@@ -638,7 +739,7 @@ plot(p9)
 
 
 # Export the heatmap and bar plot as separate PDF pages (Figure 2c).
-pdf("20260915_matrisome_DEP_heatmap_and_barplot.pdf", width = 10, height = 6)
+pdf("matrisome_DEP_heatmap_and_barplot.pdf", width = 10, height = 6)
 print(p8)
 print(p9)
 dev.off()
