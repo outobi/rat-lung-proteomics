@@ -181,7 +181,8 @@ sample.id <- as.data.frame(paste0("S", 1:96))   # not used below
 
 
 # Read sample identifiers and experimental group assignments.
-# Sample.group codes: 1st letter = age (A/Y), 2nd = lung region (B/T/C/P),
+# Sample.group codes: 1st letter = age (Y = peripubertal, A = young adult),
+# 2nd = lung region (B = Bottom, T = Top, C = Central, P = Peripheral),
 # 3rd = sex (F/M); 6 samples per group.
 sample.table <- read_excel("Sample_index.xlsx")
 

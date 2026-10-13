@@ -36,7 +36,7 @@
 #       (used by Script_4, Script_6 and Script_8)
 #       data_table (list of data_ori, data_filtered, data_nor, data_imp),
 #       matrisome_anno_table, info_table.
-#   - UW.Madison.rat.lung.proteomics_DIANN_protein intensity.xlsx
+#   - UW.Madison.rat.lung.proteomics_DIANN_protein_intensity.xlsx
 #       (used by Script_4, Script_6 and Script_8)
 #       Sheets data_ori, data_filtered, data_nor, data_imp, each with the
 #       7 annotation columns followed by S1-S96.
@@ -409,7 +409,7 @@ data_table_export <- list("data_ori" = cbind(matrisome_anno_table[match(rownames
 
 # Export annotated intensity tables (read by Script_4, Script_6 and Script_8)
 # and record completion in the log.
-export(data_table_export, file = paste0(study_number, "_", search_method, "_protein intensity.xlsx"))
+export(data_table_export, file = paste0(study_number, "_", search_method, "_protein_intensity.xlsx"))
 cat(paste0(Sys.time(), " Excel file of protein intensity data tables is created", "\n"), file = log_file, append = TRUE)
 
 
