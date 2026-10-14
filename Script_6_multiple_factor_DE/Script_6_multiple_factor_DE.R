@@ -1,4 +1,85 @@
+# =============================================================================
+# Script 6: Multiple-factor differential abundance (within-subgroup contrasts)
+# =============================================================================
+#
+# Purpose:
+#   For each of the 3,600 filtered and imputed protein groups from Script_3,
+#   fit a linear mixed model with all two-way interactions and a random
+#   intercept per animal:
+#       Protein ~ Age + Sex + Region + Age:Region + Sex:Region + Age:Sex
+#                 + (1 | PID)
+#   and test each factor within subgroups of the other two (emmeans):
+#     - Age:    Aged - Young     within each Region x Sex   ( 8 comparisons)
+#     - Sex:    Female - Male    within each Region x Age   ( 8 comparisons)
+#     - Region: 6 region pairs   within each Age x Sex      (24 comparisons)
+#   (A = Aged = young adult; Y = Young = peripubertal.)
+#   Then count DEPs and draw bar plots, volcano plots, a heatmap, boxplots
+#   and a correlation map for the age comparisons.
+#
+# Method 4 filter and multiple testing:
+#   For each comparison, keep proteins with >= 5 observed (non-imputed)
+#   values in at least one of the two groups compared (counts from
+#   Real_values_number_in_sample_group.xlsx), then BH-adjust the p-values
+#   within that comparison. Unfiltered results are kept in
+#   *_comparisons_unfiltered (not adjusted).
+#   DEP: FDR (p.value.adjusted) < 0.05 and |estimate| > log2(1.5).
+#   Positive estimate = higher in the first group of the contrast.
+#
+# Inputs (all in this folder):
+#   - UW.Madison.rat.lung.proteomics_data_tables.RData  (output of Script_3)
+#       data_table$data_imp: imputed, normalized log2 intensities
+#       (3,600 proteins x S1-S96); info_table; matrisome_anno_table.
+#   - UW.Madison.rat.lung.proteomics_DIANN_protein_intensity.xlsx
+#       (output of Script_3) Sheet "data_imp": the 7 annotation columns are
+#       attached to the results; columns 8-103 (S1-S96) are used for the
+#       boxplots. Rows are in the same order as data_table$data_imp.
+#   - Sample_metadata.xlsx
+#       96 rows in S1-S96 order (Sample.ID, Sample.group, PID, Age, Region,
+#       Sex, ...); used as the model table (PID = animal ID).
+#   - Real_values_number_in_sample_group.xlsx  (output of Script_3)
+#       Number of observed values (0-6) per protein in each of the 16 groups.
+#   - Sample_group_order.txt
+#       Sample order (Sample.group, Sample.ID) for the boxplots.
+#   - 38 matrisome DEPs with unique features in 8 pairwise comparisons.txt
+#       Uniprot.ID and Gene.symbol of the 38 matrisome proteins shown in the
+#       heatmap and boxplots.
+#
+# Outputs (written to this folder):
+#   - age.vs.young4.xlsx, female.vs.male4.xlsx, region.vs.region4.xlsx
+#       Method 4 results, one sheet per comparison (8 / 8 / 24): annotations,
+#       group labels, observed-value counts, contrast estimate, SE, df,
+#       t.ratio, p.value and p.value.adjusted.
+#   - Method 4 DE_protein_summary_all_comparisons_FDR0.05_FC1.5.xlsx
+#       DEP counts (total and matrisome, up / down) per comparison.
+#   - DE_protein_summary_plots.pdf            (Figures 3a, 5b, S15a-d)
+#   - DE_matrisome_protein_summary_plots.pdf  (Figures 3b, 5c, S15e-h)
+#   - age_vs_young_DEP_multiple_factor_volcano_plot.pdf
+#       8 pages, one per age comparison (Figures 3d-g, S5a-d).
+#   - summary_table3.xlsx
+#       Direction (1 = up in Aged, -1 = up in Young, 0 = not a DEP or
+#       filtered out) of the union of age DEPs (670 proteins in the reported
+#       run) across the 8 age comparisons.
+#   - Age_vs_young_matrisome_DEP_heatmap.pdf  (Figure 3h)
+#       log2 fold changes of the 38 matrisome proteins (0 = not a DEP or
+#       filtered out).
+#   - All_Proteins_Boxplots.pdf               (Figures 5h, 5i, S6a-d)
+#       One page per protein (38), all 6 samples per group.
+#   - Age_vs_young_DEP_correlation_map.pdf    (Figure 3c)
+#       Pearson correlations of the DEP direction matrix between the 8 age
+#       comparisons.
+#   - Script_6_multiple_factor_DE.RData
+#       Full R workspace, including intermediate objects.
+#
+# Run in RStudio: setwd() below requires an interactive RStudio session.
+# Model fitting takes several minutes (3,600 lmer fits, 3 emmeans each).
+# =============================================================================
+
 # Load required packages.
+# lme4 + lmerTest: lmer(); emmeans: emmeans() / contrast();
+# dplyr + tidyr: table handling (bind_rows, gather, ...); rio: export();
+# readxl: read_excel(); readr: read_delim(); ggplot2 + ggrepel: plots;
+# gridExtra: grid.arrange(); pheatmap + RColorBrewer: heatmap;
+# reshape2: melt().
 library(lme4)
 library(lmerTest)
 library(emmeans)
@@ -6,33 +87,29 @@ library(dplyr)
 library(tidyr)
 library(rio)
 library(readxl)
+library(readr)
 library(ggplot2)
+library(ggrepel)
 library(gridExtra)
-
-
-# Retain dependencies used by the later, unchanged analysis sections.
-library(limma)
+library(pheatmap)
+library(RColorBrewer)
 library(reshape2)
-library(Rmisc)
-library(stringr)
-library(multcomp)
 
 
-# Configure the analysis and load the input files.
-# Method 4: retain proteins with >= 5 observed values in at least one group,
-# then apply BH correction separately within each filtered comparison.
-# data7 contains normalized, imputed log2 abundances; counts precede imputation.
-# workdata must contain one row per data7 column, in the same sample order.
+# Set the working directory to this script's folder (RStudio only).
+# data7 contains normalized, imputed log2 abundances; observed-value counts
+# are from before imputation. workdata must contain one row per data7
+# column, in the same sample order (S1-S96).
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 
 # Load the saved imputed matrices and sample information.
-load("UW.Madison.rat.lung.proteomics_data tables_2026-09-15.RData")
+load("UW.Madison.rat.lung.proteomics_data_tables.RData")
 
 
 # Read the annotated imputed-intensity worksheet for output annotations.
 # The first seven columns are assumed to contain protein annotations.
-data_imp <- read_excel("UW.Madison.rat.lung.proteomics_DIANN_protein intensity_2026-09-15.xlsx",
+data_imp <- read_excel("UW.Madison.rat.lung.proteomics_DIANN_protein_intensity.xlsx",
   sheet = "data_imp"
 )
 
@@ -620,7 +697,7 @@ age_vs_young_index_all <- c(
 
 
 # Make Figure 3d,e,f,g and Figure S5a,b,c,d
-pdf("age_vs_young_DEP_multiple_facotor_volcano_plot.pdf", width = 12, height = 8)
+pdf("age_vs_young_DEP_multiple_factor_volcano_plot.pdf", width = 12, height = 8)
 
 for (i in 1:8) {
   age_DE <- age.vs.young4[[i]]
@@ -697,12 +774,12 @@ for (i in 1:8) {
   res2 <- res2[abs(res2$estimate) > 0.5849625, ]
   res3 <- res2[c(1, 15)]
 
-  summary_table[[i]] <- data.frame("index" = 1:670, "Uniprot" = gene_set, "estimate" = 0, stringsAsFactors = FALSE)
+  summary_table[[i]] <- data.frame("index" = seq_along(gene_set), "Uniprot" = gene_set, "estimate" = 0, stringsAsFactors = FALSE)
 
   # A zero in the summary table indicates either exclusion by filtering
   # or no significant differential expression between aged and young groups.
 
-  for (j in 1:670) {
+  for (j in seq_along(gene_set)) {
     if (summary_table[[i]]$Uniprot[j] %in% res3$Uniprot.ID) {
       index_number <- which(res3$Uniprot == summary_table[[i]]$Uniprot[j])
       summary_table[[i]]$estimate[j] <- res3$estimate[index_number]
@@ -749,26 +826,62 @@ rownames(summary_table4) <- matrisome_dep_list$Gene.symbol
 # Plot the selected matrisome log2 fold changes.
 # Zero indicates exclusion by the second filter or no significant difference
 # at the fold-change and FDR thresholds of 1.5 and 0.05.
+# Discrete color scale with a cutoff at |log2 FC| = log2(1.5) = 0.585.
+# Bin edges are the 11 equal-width bins over the data range used by the
+# original pheatmap default (range -2.13 to 1.77 in the reported run);
+# the two middle bins are replaced by one white bin from -0.585 to 0.585
+# (the zeros: not a DEP or filtered out). Result: 5 blue bins (higher in
+# Young = peripubertal), white, 4 red bins (higher in Aged = young adult).
+heatmap_fc_cut <- log2(1.5)
+heatmap_matrix <- as.matrix(summary_table4)
+heatmap_bins <- seq(min(heatmap_matrix), max(heatmap_matrix), length.out = 12)
+heatmap_breaks <- c(heatmap_bins[1:5], -heatmap_fc_cut, heatmap_fc_cut, heatmap_bins[9:12])
+rdbu <- rev(brewer.pal(n = 11, name = "RdBu")) # dark blue ... white ... dark red
+heatmap_colors <- c(rdbu[1:5], "white", rdbu[8:11])
+
+# Column annotation bars: lung region (B / C / P / T) and sex (F / M).
+# pheatmap draws the last column on top, so Sex is listed first to place
+# the Region bar above the Sex bar.
+heatmap_col_anno <- data.frame(
+  Sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M"), levels = c("F", "M")),
+  Region = factor(c("B", "B", "C", "C", "P", "P", "T", "T"), levels = c("B", "C", "P", "T")),
+  row.names = colnames(summary_table4)
+)
+heatmap_anno_colors <- list(
+  Region = c(B = "#F47F26", C = "#A5562D", P = "#A9C0D9", T = "#874F9F"),
+  Sex = c(F = "#CA2435", M = "#485AA7")
+)
+
+# Gene symbols in upper case, as in the figure.
+rownames(heatmap_matrix) <- toupper(rownames(heatmap_matrix))
+
 pppp <- pheatmap(
-  summary_table4,
-  color = rev(brewer.pal(n = 11, name = "RdBu")), # Set color palette
-  # scale = "row",                              # Uncomment if you want to scale rows
+  heatmap_matrix,
+  color = heatmap_colors,
+  breaks = heatmap_breaks,
+  legend_breaks = c(-2, -1, -heatmap_fc_cut, heatmap_fc_cut, 1),
+  legend_labels = c("-2", "-1", "-0.585", "0.585", "1"),
+  annotation_col = heatmap_col_anno,
+  annotation_colors = heatmap_anno_colors,
+  annotation_names_col = FALSE, # Hide the "Region" / "Sex" labels next to the bars.
   fontsize_row = 8, # Row font size
   show_rownames = TRUE, # Show row names.
-  show_colnames = TRUE, # Show column names
-  cluster_cols = FALSE, # Keep the original column order.
+  show_colnames = FALSE, # Columns are identified by the annotation bars.
+  cluster_cols = FALSE, # Keep the original column order (BF, BM, CF, ... TM).
   cluster_rows = FALSE, # Keep the original row order.
-  clustering_distance_rows = "correlation", # Use correlation for row distance
-  clustering_distance_cols = "correlation", # Use correlation for column distance
+  cellwidth = 14, cellheight = 9, # Fixed cell size.
   border_color = "grey50", # Draw grey cell borders.
-  # annotation = hm_anno,                       # Uncomment and define if you have annotations
-  # cutree_rows = 2,                            # Uncomment to cut the tree into two clusters
-  main = "" # Main title of the heatmap
+  main = "Matrisome DEPs, 7-11M vs 7W" # Main title of the heatmap
 )
 
 
 # Make Figure 3h
 print(pppp)
+
+# Save the heatmap (Figure 3h).
+pdf("Age_vs_young_matrisome_DEP_heatmap.pdf", width = 11, height = 8.5)
+print(pppp)
+dev.off()
 
 
 # Plot the 38 selected matrisome proteins using imputed log2 abundances.
@@ -857,4 +970,5 @@ pp3 <- ggplot(cor_summary_long, aes(x = Var1, y = Var2, size = value, color = va
 print(pp3)
 ggsave("Age_vs_young_DEP_correlation_map.pdf", pp3, width = 8, height = 7)
 
+# save the current workspace. 
 save.image("Script_6_multiple_factor_DE.RData")
