@@ -120,6 +120,6 @@ The older [syntax report](docs/SYNTAX_CHECK.md), [file-I/O index](docs/FILE_IO_I
 
 Supporting inputs, processed snapshots, pathway workbooks and figures remain alongside their scripts. The [added-file manifest](docs/added_files_manifest.csv) records a historical import, not every subsequent revision.
 
-Two large Script 9 saved workspaces are excluded from Git; the [large-file manifest](docs/large_files_not_in_git.csv) records their sizes and checksums but is not a download link. Local histories, temporary Excel files and deployment records are also excluded.
+Two large Script 9 saved workspaces (~760 MB each) were never added to Git and have since been deleted, because the revised Script 9 step 1 / step 2 scripts regenerate all results from the GEO data and the proteomics matrix; the [large-file manifest](docs/large_files_not_in_git.csv) keeps their sizes and checksums for reference. Local histories, temporary Excel files and deployment records are also excluded.
 
 This checkout does not include a license file or citation metadata. Formal release, archival deposition and reuse terms should be finalized with the manuscript; repository availability alone does not imply a license grant.
