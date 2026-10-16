@@ -5,10 +5,11 @@ This folder contains two Shiny applications for exploring precomputed protein di
 ## Archive version and data source
 
 - Proposed manuscript release: **v1.0.0** (not yet tagged or published).
-- Local data snapshot: **2026-09-21**.
+- Local data snapshot: **2026-10-16** (helper data regenerated after the volcano-label fix below).
 - Authoritative helper data: the four files in the root of `Script_10_R_Shiny`, regenerated using the current analysis workflow.
 - The helper files in `apps/` were copied from this current working version. 
 - The local applications have initialized successfully with these files. 
+- **Fix (2026-10-16):** earlier versions of the volcano explorer paired the 24 regional comparison labels with result tables by list position, so every regional comparison showed the data of a different age-by-sex group (e.g. "Young Male" displayed Aged Female results). The helper tables are now named by their display label and the app looks them up by name. The protein explorer and the age and sex comparisons were not affected. Redeploy the volcano explorer to update the public app.
 
 ## Folder contents
 
@@ -33,7 +34,7 @@ Script_10_R_Shiny/
         └── helper volcano plot.RData
 ```
 
-The root helper files are the source copies; the copies inside each application make it independently runnable. If helper data are regenerated, refresh the corresponding SAME NAME files inside `apps/` before running or deploying the applications. 
+The root helper files are the source copies; the copies inside each application make it independently runnable. `Script-10_R_Shiny.R` writes the root copies and copies them into `apps/` automatically. 
 
 ## Run locally
 
@@ -59,7 +60,7 @@ Stop the running application before launching the other. The applications load t
 
 ## Comparisons and direction
 
-The archive contains 40 comparisons: 8 age comparisons, 8 sex comparisons and 24 regional comparisons.
+The archive contains 40 comparisons: 8 age comparisons, 8 sex comparisons and 24 regional comparisons. Young = 7 weeks (peripubertal); Aged = 7-11 months (young adult).
 
 | Family | Comparisons | Positive estimate | Negative estimate |
 |---|---|---|---|
@@ -73,18 +74,18 @@ The six regional pairs are Bottom–Central, Bottom–Peripheral, Bottom–Top, 
 
 Mixed-model fitting, contrast estimation, observed-value filtering and multiple-testing adjustment are performed upstream in the multiple-factor analysis. The Shiny applications do not refit these models or recalculate adjusted P values when users change selections or thresholds.
 
-The current workflow retains proteins with at least five observed values in either group of a comparison, then applies Benjamini–Hochberg adjustment within that comparison. `Script-10_R_Shiny.R` loads `Script_6_multiple_factor_DE.RData` and packages the results for the apps.
+The current workflow retains proteins with at least five observed values in either group of a comparison, then applies Benjamini–Hochberg adjustment within that comparison. `Script-10_R_Shiny.R` loads `Script_6_multiple_factor_DE.RData` (a copy of the Script_6 workspace kept in this folder; same results as the Script_6 output) and packages the results for the apps.
 
 | File | Contents |
 |---|---|
 | `helper age.RData` | `df1`, `df4` and `df6` for the eight age comparisons |
 | `helper sex.RData` | `df1`, `df4` and `df6` for the eight sex comparisons |
 | `helper region.RData` | `df1`, `df4` and `df6` for the 24 regional comparisons |
-| `helper volcano plot.RData` | DEP result lists: `age.vs.young`, `female.vs.male`, `region.vs.region` |
+| `helper volcano plot.RData` | DEP result lists `age.vs.young`, `female.vs.male`, `region.vs.region`, named by display label (e.g. "Young Male: Bottom versus Central") |
 
 For the protein explorer, `df1` contains annotations and comparison statistics, `df4` is a transposed display matrix of estimates and adjusted P values, and `df6` contains protein annotations. The preparation script rounds `df4` to four significant digits. Selected-protein downloads are derived from these display matrices and therefore should not be treated as full-precision model output.
 
-In the protein helper tables, adjusted P values are populated from the DE results; missing adjusted P values indicate that a value was not supplied by that filtered result table. They should not be interpreted as zero. The volcano helper retains the eligible DE comparison tables.
+In the protein helper tables, adjusted P values are populated from the DE results; missing adjusted P values indicate that the protein was removed by the observed-value filter in that comparison; the protein explorer shows them as "Not tested". They should not be interpreted as zero. The volcano helper retains the eligible DE comparison tables.
 
 ## Using the applications
 
@@ -106,7 +107,7 @@ Public application links cited in the manuscript:
 
 ## Software versions
 
-See `sessionInfo.txt` for platform and namespace details.
+See `sessionInfo.txt` (written by `Script-10_R_Shiny.R`) for platform and package details.
 
 | Application dependency | Version |
 |---|---|
@@ -117,7 +118,7 @@ See `sessionInfo.txt` for platform and namespace details.
 | tidyr | 1.3.2 |
 | ggtext | 0.1.2 |
 
-Additional packages loaded by the preparation script: lme4 1.1.38; lmerTest 3.1.3; emmeans 2.0.1; rio 1.2.4; readxl 1.4.5; gridExtra 2.3; limma 3.62.2; reshape2 1.4.5; Rmisc 1.5.1; stringr 1.6.0; multcomp 1.4.29.
+The preparation script only needs dplyr (1.1.4).
 
 ## License
 

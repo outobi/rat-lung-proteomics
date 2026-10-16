@@ -1,264 +1,166 @@
-# Load required packages.
-library(lme4)
-library(lmerTest)
-library(emmeans)
-library(dplyr)
-library(tidyr)
-library(rio)
-library(readxl)
-library(ggplot2)
-library(gridExtra)
+# =============================================================================
+# Script 10: Prepare the helper data for the two Shiny applications
+# =============================================================================
+#
+# Purpose:
+#   Package the multiple-factor differential-expression results of Script_6
+#   (8 age, 8 sex and 24 region comparisons) for the two Shiny apps in
+#   apps/. The apps do not refit models or recompute adjusted p-values.
+#   (Young = 7 weeks, peripubertal; Aged = 7-11 months, young adult.)
+#
+# Input (in this folder):
+#   - Script_6_multiple_factor_DE.RData
+#       Copy of the Script_6 workspace (same results as
+#       ../Script_6_multiple_factor_DE/Script_6_multiple_factor_DE.RData).
+#       *_comparisons_unfiltered: model results for all 3,600 proteins
+#       (no p-value adjustment); age.vs.young4, female.vs.male4,
+#       region.vs.region4: Method 4 results (proteins with >= 5 observed
+#       values in either group, BH-adjusted within each comparison);
+#       df0: the 7 protein annotation columns.
+#
+# Outputs (written to this folder and copied into apps/, see Step 5):
+#   - helper age.RData, helper sex.RData, helper region.RData
+#       (for apps/protein_explorer)
+#       df1: annotations + estimate and FDR for every comparison (one row per
+#            protein with a gene symbol; FDR is NA when the protein was
+#            removed by the Method 4 filter in that comparison);
+#       df4: transposed display matrix (rows = estimates, then FDRs, in the
+#            app's comparison order; columns = gene symbols), 4 significant
+#            digits;
+#       df6: protein annotations sorted by gene symbol.
+#   - helper volcano plot.RData  (for apps/volcano_explorer)
+#       age.vs.young, female.vs.male, region.vs.region: Method 4 result
+#       tables, named by their display label and ordered as shown in the app.
+#   - sessionInfo.txt
+#       R and package versions of the session that ran this script.
+#
+# Comparison order used by both apps:
+#   Age (Aged versus Young):   Bottom / Top / Central / Peripheral x Male / Female
+#   Sex (Female versus Male):  Bottom / Top / Central / Peripheral x Aged / Young
+#   Region (6 region pairs):   within Young Male, Young Female, Aged Male,
+#                              Aged Female
+#   Positive estimate = higher in the first group (Aged, Female, or the
+#   first region of the pair).
+#
+# Run in RStudio: setwd() below requires an interactive RStudio session.
+# =============================================================================
 
-
-# Retain dependencies used by the later, unchanged analysis sections.
-library(limma)
-library(reshape2)
-library(Rmisc)
-library(stringr)
-library(multcomp)
-
-
+# Set the working directory to this script's folder (RStudio only).
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
+# Load required packages.
+# dplyr: arrange().
+library(dplyr)
 
-# Load the saved imputed matrices and sample information.
+
+# Step 1: Load the Script_6 results --------------------------------------------
+
 load("Script_6_multiple_factor_DE.RData")
 
 
-# Prepare comparison tables for single-gene queries R Shiny app.
-# Fill unfiltered result tables with Method 4 FDR vaues where available.
+# Step 2: Comparison order and display labels ----------------------------------
 
-# Prepare age versus young results.
-table <- list()
-for (j in 1:8) {
-  bbb <- age_comparisons_unfiltered[[j]]
-  bbb$p.value.adjusted <- NA
+# App display label = Script_6 list name, in the order shown in the apps.
+age_order <- c(
+  "Bottom Male"       = "bottom.male",
+  "Bottom Female"     = "bottom.female",
+  "Top Male"          = "top.male",
+  "Top Female"        = "top.female",
+  "Central Male"      = "central.male",
+  "Central Female"    = "central.female",
+  "Peripheral Male"   = "peri.male",
+  "Peripheral Female" = "peri.female"
+)
 
-  i = 1
-  ccc <- age.vs.young4[[j]]
-  for (items in ccc$Uniprot.ID) {
-    if (items %in% bbb$Uniprot.ID) {
-      index <- which(bbb$Uniprot.ID == items)
-      bbb$p.value.adjusted[index] <- ccc$p.value.adjusted[i]
-      i = i + 1
-    }
-  }
+sex_order <- c(
+  "Bottom Aged"      = "bottom.age",
+  "Bottom Young"     = "bottom.young",
+  "Top Aged"         = "top.age",
+  "Top Young"        = "top.young",
+  "Central Aged"     = "central.age",
+  "Central Young"    = "central.young",
+  "Peripheral Aged"  = "peri.age",
+  "Peripheral Young" = "peri.young"
+)
 
-  table[[j]] <- bbb
+region_pairs <- c(
+  "Bottom versus Central"     = "bottom.vs.central",
+  "Bottom versus Peripheral"  = "bottom.vs.peri",
+  "Bottom versus Top"         = "bottom.vs.top",
+  "Central versus Peripheral" = "central.vs.peri",
+  "Central versus Top"        = "central.vs.top",
+  "Peripheral versus Top"     = "peri.vs.top"
+)
+region_groups <- c(
+  "Young Male"   = "male.young",
+  "Young Female" = "female.young",
+  "Aged Male"    = "male.age",
+  "Aged Female"  = "female.age"
+)
+region_order <- unlist(lapply(names(region_groups), function(g) {
+  setNames(paste(region_pairs, region_groups[[g]], sep = "."), paste0(g, ": ", names(region_pairs)))
+}))
+
+stopifnot(
+  setequal(age_order, names(age.vs.young4)),
+  setequal(sex_order, names(female.vs.male4)),
+  setequal(region_order, names(region.vs.region4))
+)
+
+
+# Step 3: Protein explorer helpers ---------------------------------------------
+
+# For each comparison, take the unfiltered model results and fill in the
+# Method 4 FDR (NA = protein removed by the filter in that comparison).
+fill_fdr <- function(unfiltered, filtered) {
+  unfiltered$p.value.adjusted <- filtered$p.value.adjusted[match(unfiltered$Uniprot.ID, filtered$Uniprot.ID)]
+  unfiltered
 }
 
-names(table) <- names(age.vs.young4)
+make_protein_helper <- function(unfiltered_list, filtered_list, order, file) {
+  tables <- lapply(order, function(k) fill_fdr(unfiltered_list[[k]], filtered_list[[k]]))
 
-table1 <- list()
-table1[c(1, 2, 3, 4, 5, 6, 7, 8)] <- table[c(5, 1, 8, 4, 6, 2, 7, 3)]
+  # df1: annotations + (estimate, FDR) for each comparison, in app order.
+  df1 <- cbind(df0, do.call(cbind, unname(lapply(tables, function(t) t[c("estimate", "p.value.adjusted")]))))
+  df1 <- df1[df1$Gene.symbol != "-", ] # proteins with a gene symbol only
+  rownames(df1) <- df1$Gene.symbol
 
-age_vs_young_index_all <- c(
-  "Bottom Male", "Bottom Female", "Top Male", "Top Female",
-  "Central Male", "Central Female", "Peripheral Male", "Peripheral Female"
-)
-names(table1) <- age_vs_young_index_all
-table <- table1
-# Combine the eight aged-versus-young comparison tables.
+  # df4: rows = all estimates, then all FDRs; columns = gene symbols.
+  stats <- df1[-(1:ncol(df0))]
+  n <- length(order)
+  df4 <- as.data.frame(t(stats[c(seq(1, 2 * n, 2), seq(2, 2 * n, 2))]))
+  df4 <- signif(df4, 4)
 
-df1 <- cbind(
-  df0,
-  table[[1]][c(15, 20)],
-  table[[2]][c(15, 20)],
-  table[[3]][c(15, 20)],
-  table[[4]][c(15, 20)],
-  table[[5]][c(15, 20)],
-  table[[6]][c(15, 20)],
-  table[[7]][c(15, 20)],
-  table[[8]][c(15, 20)]
-)
-df1 <- df1[df1$Gene.symbol != "-", ]
-rownames(df1) <- df1$Gene.symbol
-df2 <- df1[c(8:23)]
+  # df6: protein annotations sorted by gene symbol (English collation).
+  df6 <- df0 %>% arrange(Gene.symbol, .locale = "en")
 
-df3 <- df2[c(1, 3, 5, 7, 9, 11, 13, 15, 2, 4, 6, 8, 10, 12, 14, 16)]
-df4 <- as.data.frame(t(df3))
-df4 <- signif(df4, 4)
-
-
-# Prepare the reference table with matrisome annotations.
-df6 <- df0
-
-df6 <- df6 %>% arrange(Gene.symbol)
-
-save(df1, df4, df6, file = "helper age.RData")
-
-
-# Prepare female-versus-male results.
-
-table <- list()
-for (j in 1:8) {
-  bbb <- sex_comparisons_unfiltered[[j]]
-  bbb$p.value.adjusted <- NA
-
-  i = 1
-  ccc <- female.vs.male4[[j]]
-  for (items in ccc$Uniprot.ID) {
-    if (items %in% bbb$Uniprot.ID) {
-      index <- which(bbb$Uniprot.ID == items)
-      bbb$p.value.adjusted[index] <- ccc$p.value.adjusted[i]
-      i = i + 1
-    }
-  }
-
-  table[[j]] <- bbb
+  save(df1, df4, df6, file = file)
 }
 
-names(table) <- names(female.vs.male4)
-
-table1 <- list()
-table1[c(1, 2, 3, 4, 5, 6, 7, 8)] <- table[c(1, 5, 4, 8, 2, 6, 3, 7)]
-
-female.vs.male.index.all <- c(
-  "Bottom Age",
-  "Bottom Young",
-  "Top Age",
-  "Top Young",
-  "Central Age",
-  "Central Young",
-  "Peripheral Age",
-  "Peripheral Young"
-)
-
-names(table1) <- female.vs.male.index.all
-table <- table1
+make_protein_helper(age_comparisons_unfiltered, age.vs.young4, age_order, "helper age.RData")
+make_protein_helper(sex_comparisons_unfiltered, female.vs.male4, sex_order, "helper sex.RData")
+make_protein_helper(region_comparisons_unfiltered, region.vs.region4, region_order, "helper region.RData")
 
 
-# Combine the eight female versus male comparison tables.
+# Step 4: Volcano explorer helper ----------------------------------------------
 
-df1 <- cbind(
-  df0,
-  table[[1]][c(15, 20)],
-  table[[2]][c(15, 20)],
-  table[[3]][c(15, 20)],
-  table[[4]][c(15, 20)],
-  table[[5]][c(15, 20)],
-  table[[6]][c(15, 20)],
-  table[[7]][c(15, 20)],
-  table[[8]][c(15, 20)]
-)
-df1 <- df1[df1$Gene.symbol != "-", ]
-rownames(df1) <- df1$Gene.symbol
-df2 <- df1[c(8:23)]
+# Method 4 result tables, named by display label and in app order, so that
+# the app finds each comparison by name (not by list position).
+age.vs.young <- setNames(age.vs.young4[age_order],
+                         paste0(names(age_order), ": Aged versus Young"))
+female.vs.male <- setNames(female.vs.male4[sex_order],
+                           paste0(names(sex_order), ": Female versus Male"))
+region.vs.region <- setNames(region.vs.region4[region_order], names(region_order))
 
-df3 <- df2[c(1, 3, 5, 7, 9, 11, 13, 15, 2, 4, 6, 8, 10, 12, 14, 16)]
-df4 <- as.data.frame(t(df3))
-df4 <- signif(df4, 4)
+save(age.vs.young, female.vs.male, region.vs.region, file = "helper volcano plot.RData")
 
 
-# Prepare the reference table with matrisome annotations.
-df6 <- df0
-df6 <- df6 %>% arrange(Gene.symbol)
+# Step 5: Copy the helper files into the apps ---------------------------------
 
-save(df1, df4, df6, file = "helper sex.RData")
-
-
-# Prepare region-versus-region results.
-
-table <- list()
-for (j in 1:24) {
-  bbb <- region_comparisons_unfiltered[[j]]
-  bbb$p.value.adjusted <- NA
-
-  i = 1
-  ccc <- region.vs.region4[[j]]
-  for (items in ccc$Uniprot.ID) {
-    if (items %in% bbb$Uniprot.ID) {
-      index <- which(bbb$Uniprot.ID == items)
-      bbb$p.value.adjusted[index] <- ccc$p.value.adjusted[i]
-      i = i + 1
-    }
-  }
-
-  table[[j]] <- bbb
-}
-names(table) <- names(region.vs.region4)
+# Each app loads its own copy, so it can run or be deployed on its own.
+file.copy(c("helper age.RData", "helper sex.RData", "helper region.RData"), "apps/protein_explorer", overwrite = TRUE)
+file.copy("helper volcano plot.RData", "apps/volcano_explorer", overwrite = TRUE)
 
 
-# Combine the 24 region versus region comparison tables.
-
-# Order comparisons by young male, young female, aged male, and aged female.
-table1 <- table$bottom.vs.central.male.young
-
-table2 <- table$bottom.vs.peri.male.young
-
-table3 <- table$bottom.vs.top.male.young
-
-table4 <- table$central.vs.peri.male.young
-
-table5 <- table$central.vs.top.male.young
-
-table6 <- table$peri.vs.top.male.young
-
-table7 <- table[[13]]
-table8 <- table[[14]]
-table9 <- table[[15]]
-table10 <- table[[16]]
-table11 <- table[[17]]
-table12 <- table[[18]]
-
-table13 <- table[[7]]
-table14 <- table[[8]]
-table15 <- table[[9]]
-table16 <- table[[10]]
-table17 <- table[[11]]
-table18 <- table[[12]]
-
-table19 <- table[[1]]
-table20 <- table[[2]]
-table21 <- table[[3]]
-table22 <- table[[4]]
-table23 <- table[[5]]
-table24 <- table[[6]]
-
-df1 <- cbind(
-  df0, table1[c(15, 20)], table2[c(15, 20)], table3[c(15, 20)], table4[c(15, 20)], table5[c(15, 20)], table6[c(15, 20)], table7[c(15, 20)], table8[c(15, 20)],
-  table9[c(15, 20)], table10[c(15, 20)], table11[c(15, 20)], table12[c(15, 20)], table13[c(15, 20)], table14[c(15, 20)], table15[c(15, 20)], table16[c(15, 20)],
-  table17[c(15, 20)], table18[c(15, 20)], table19[c(15, 20)], table20[c(15, 20)], table21[c(15, 20)], table22[c(15, 20)], table23[c(15, 20)], table24[c(15, 20)]
-)
-
-df1 <- df1[df1$Gene.symbol != "-", ]
-rownames(df1) <- df1$Gene.symbol
-df2 <- df1[c(8:55)]
-
-df3 <- df2[c(seq(1, 48, 2), seq(2, 48, 2))]
-df4 <- as.data.frame(t(df3))
-df4 <- signif(df4, 4)
-
-df6 <- df0
-df6 <- df6 %>% arrange(Gene.symbol)
-
-save(df1, df4, df6, file = "helper region.RData")
-
-region.vs.region.index.all <- c(
-  "Young Male: Bottom versus Central", "Young Male: Bottom versus Peripheral",
-  "Young Male: Bottom versus Top", "Young Male: Central versus Peripheral",
-  "Young Male: Central versus Top", "Young Male: Peripheral versus Top",
-  "Young Female: Bottom versus Central", "Young Female: Bottom versus Peripheral",
-  "Young Female: Bottom versus Top", "Young Female: Central versus Peripheral",
-  "Young Female: Central versus Top", "Young Female: Peripheral versus Top",
-  "Aged Male: Bottom versus Central", "Aged Male: Bottom versus Peripheral",
-  "Aged Male: Bottom versus Top", "Aged Male: Central versus Peripheral",
-  "Aged Male: Central versus Top", "Aged Male: Peripheral versus Top",
-  "Aged Female: Bottom versus Central", "Aged Female: Bottom versus Peripheral",
-  "Aged Female: Bottom versus Top", "Aged Female: Central versus Peripheral",
-  "Aged Female: Central versus Top", "Aged Female: Peripheral versus Top"
-)
-
-
-# Prepare the volcano plot R Shiny app helper data--------
-# Save Method 4 comparison lists for downstream volcano plots.
-
-rm(list = ls()[!ls() %in% c("age.vs.young4", "female.vs.male4", "region.vs.region4")])
-age.vs.young <- age.vs.young4
-female.vs.male <- female.vs.male4
-region.vs.region <- region.vs.region4
-rm(age.vs.young4)
-rm(female.vs.male4)
-rm(region.vs.region4)
-
-save.image("helper volcano plot.RData")
+# Record the R and package versions of this session.
+writeLines(capture.output(sessionInfo()), "sessionInfo.txt")

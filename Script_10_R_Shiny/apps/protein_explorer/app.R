@@ -1,3 +1,22 @@
+# =============================================================================
+# Shiny app: Protein explorer (Script_10)
+# =============================================================================
+#
+# Look up one or more proteins (by gene symbol) and show their estimates and
+# FDRs across the multiple-factor comparisons of Script_6: 8 age (Aged versus
+# Young), 8 sex (Female versus Male) or 24 region comparisons, as a table and
+# a bubble plot. FDR is NA ("Not tested") when the protein was removed by the
+# Method 4 observed-value filter in that comparison.
+#
+# Data (made by Script-10_R_Shiny.R): helper age.RData, helper region.RData,
+#   helper sex.RData - df4: estimates (first half of the rows) and FDRs
+#   (second half) per gene symbol, in the comparison order listed below;
+#   df1 / df6: protein annotations.
+#
+# Young = 7 weeks; Aged = 7-11 months.
+# Run: shiny::runApp("apps/protein_explorer")
+# =============================================================================
+
 library(shiny)
 library(ggplot2)
 library(DT)
@@ -5,21 +24,20 @@ library(dplyr)
 library(tidyr)
 library(ggtext)
 
-# Load data
-load("helper age.RData")    # contains df4_age (previously df4) and df1
+# Load data (each helper file contains df1, df4 and df6).
+load("helper age.RData")
 df4_age <- df4
-load("helper region.RData") # contains df4_region
+load("helper region.RData")
 df4_region <- df4
-load("helper sex.RData")    # contains df4_sex
+load("helper sex.RData")
 df4_sex <- df4
-df4_age$A1bg
 
 # Get available gene symbols
 available_gene_symbols <- sort(df1$Gene.symbol)
 
 # Define UI
 ui <- fluidPage(
-  titlePanel("Protein Analysis Dashboard"),
+  titlePanel(div("Protein Analysis Dashboard", tags$br(), tags$small("Young = 7 weeks; Aged = 7-11 months"))),
   
   tags$head(
     tags$style(
@@ -136,8 +154,8 @@ server <- function(input, output) {
                                paste(`First region`, ">", `Second region`),
                                paste(`First region`, "<", `Second region`)),
             FDR = fdr_values,
-            `Significant with FDR < 0.05` = ifelse(FDR < 0.05, "Yes", "No"),
-            `−Log10(FDR)` = signif((-1) * log10(FDR), 4)
+            `Significant with FDR < 0.05` = ifelse(is.na(FDR), "Not tested", ifelse(FDR < 0.05, "Yes", "No")),
+            `-Log10(FDR)` = signif((-1) * log10(FDR), 4)
           )
         
         return(list(gene = gene_symbol, data = df6))
@@ -157,8 +175,8 @@ server <- function(input, output) {
           mutate(
             Direction = ifelse(Estimate > 0, "Aged > Young", "Aged < Young"),
             FDR = df5[9:16, ],
-            `Significant with FDR < 0.05` = ifelse(FDR < 0.05, "Yes", "No"),
-            `−Log10(FDR)` = signif((-1) * log10(FDR), 4)
+            `Significant with FDR < 0.05` = ifelse(is.na(FDR), "Not tested", ifelse(FDR < 0.05, "Yes", "No")),
+            `-Log10(FDR)` = signif((-1) * log10(FDR), 4)
           )
         
         return(list(gene = gene_symbol, data = df6))
@@ -178,8 +196,8 @@ server <- function(input, output) {
           mutate(
             Direction = ifelse(Estimate > 0, "Female > Male", "Female < Male"),
             FDR = df5[9:16, ],
-            `Significant with FDR < 0.05` = ifelse(FDR < 0.05, "Yes", "No"),
-            `−Log10(FDR)` = signif((-1) * log10(FDR), 4)
+            `Significant with FDR < 0.05` = ifelse(is.na(FDR), "Not tested", ifelse(FDR < 0.05, "Yes", "No")),
+            `-Log10(FDR)` = signif((-1) * log10(FDR), 4)
           )
         
         return(list(gene = gene_symbol, data = df6))
@@ -229,7 +247,7 @@ server <- function(input, output) {
         # Table rendering
         output[[paste0("geneData", my_i)]] <- DT::renderDataTable({
           if(input$analysis_type == "region") {
-            rowColors <- ifelse(df6$FDR < 0.05,
+            rowColors <- ifelse(!is.na(df6$FDR) & df6$FDR < 0.05,
                                 ifelse(df6$Estimate > 0, 
                                        '#ffcdd2',  # Light red for positive significant estimates
                                        '#c8e6c9'), # Light green for negative significant estimates
@@ -257,7 +275,7 @@ server <- function(input, output) {
               )
             )
           } else {
-            rowColors <- ifelse(df6$FDR < 0.05,
+            rowColors <- ifelse(!is.na(df6$FDR) & df6$FDR < 0.05,
                                 ifelse(df6$Estimate > 0, 
                                        '#ffcdd2',
                                        '#c8e6c9'),
@@ -284,7 +302,7 @@ server <- function(input, output) {
                       )
             )
           } %>%
-            formatSignif(columns = c("Estimate", "FDR", "−Log10(FDR)"), digits = 3)
+            formatSignif(columns = c("Estimate", "FDR", "-Log10(FDR)"), digits = 3)
         })
         
         # Bubble plot
@@ -300,10 +318,10 @@ server <- function(input, output) {
                                       levels = rev(current_levels))
           }
           
-          # 确保FDR是数值型并计算−Log10(FDR)
-          df6$`−Log10(FDR)` <- as.numeric(as.character(df6$FDR))
-          df6$`−Log10(FDR)` <- -log10(df6$`−Log10(FDR)`)  # 使用正确的减号符号
-          df6$`−Log10(FDR)`[is.infinite(df6$`−Log10(FDR)`)] <- NA
+          # -log10(FDR) for the color scale (FDR = 0 would give Inf -> NA).
+          df6$`-Log10(FDR)` <- as.numeric(as.character(df6$FDR))
+          df6$`-Log10(FDR)` <- -log10(df6$`-Log10(FDR)`)
+          df6$`-Log10(FDR)`[is.infinite(df6$`-Log10(FDR)`)] <- NA
           
           y_axis_label <- switch(input$analysis_type,
                                  "age" = "Region and Sex group",
@@ -311,7 +329,7 @@ server <- function(input, output) {
                                  "region" = "Comparisons")
           
           ggplot(df6, aes(x = Estimate, y = Description,  
-                          color = `−Log10(FDR)`,  # 使用正确的减号符号
+                          color = `-Log10(FDR)`,
                           size = abs(Estimate))) +
             geom_point(alpha = 0.7) +
             scale_size_continuous(range = c(5, 15)) + 

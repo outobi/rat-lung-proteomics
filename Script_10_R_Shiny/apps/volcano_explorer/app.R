@@ -1,66 +1,50 @@
+# =============================================================================
+# Shiny app: Volcano explorer (Script_10)
+# =============================================================================
+#
+# Interactive volcano plot for one comparison of the multiple-factor
+# differential-expression analysis (Script_6, Method 4 results): 8 age,
+# 8 sex and 24 region comparisons. Points are colored by the estimate and
+# -log10(FDR) cutoffs set with the sliders (defaults: |estimate| > log2(1.5),
+# FDR < 0.05); changing a cutoff changes only the highlighting, not the
+# precomputed statistics.
+#
+# Data: helper volcano plot.RData (made by Script-10_R_Shiny.R):
+#   age.vs.young, female.vs.male, region.vs.region - result tables named by
+#   their display label. Comparisons are looked up by these names.
+#   (Earlier versions matched labels to tables by list position, which
+#   mislabelled the age x sex group of all 24 region comparisons.)
+#
+# Young = 7 weeks; Aged = 7-11 months.
+# Run: shiny::runApp("apps/volcano_explorer")
+# =============================================================================
+
 library(shiny)
 library(ggplot2)
 library(DT)
 library(dplyr)
-#library(crayon)
-#library(cli)
 
 load("helper volcano plot.RData")
-# Define comparison groups
 
-
-region.vs.region.index.all <- c("Young Male: Bottom versus Central", "Young Male: Bottom versus Peripheral", 
-                                "Young Male: Bottom versus Top", "Young Male: Central versus Peripheral", 
-                                "Young Male: Central versus Top", "Young Male: Peripheral versus Top", 
-                                
-                                "Young Female: Bottom versus Central", "Young Female: Bottom versus Peripheral", 
-                                "Young Female: Bottom versus Top", "Young Female: Central versus Peripheral", 
-                                "Young Female: Central versus Top", "Young Female: Peripheral versus Top",
-                                
-                                "Aged Male: Bottom versus Central", "Aged Male: Bottom versus Peripheral", 
-                                "Aged Male: Bottom versus Top", "Aged Male: Central versus Peripheral", 
-                                "Aged Male: Central versus Top", "Aged Male: Peripheral versus Top",
-                                
-                                "Aged Female: Bottom versus Central", "Aged Female: Bottom versus Peripheral", 
-                                "Aged Female: Bottom versus Top", "Aged Female: Central versus Peripheral", 
-                                "Aged Female: Central versus Top", "Aged Female: Peripheral versus Top"
-)
+# Comparison labels, taken from the names of the result tables.
 comparisons <- list(
-  age = c('Bottom Female: Aged versus Young', "Central Female: Aged versus Young",
-          "Peripheral Female: Aged vs Young", "Top Female: Aged vs Young",
-          'Bottom Male: Aged vs Young', "Central Male: Aged vs Young",
-          "Peripheral Male: Aged vs Young", "Top Male: Aged vs Young"),
-  sex = c('Bottom Aged: Female vs Male', "Central Aged: Female vs Male",
-          "Peripheral Aged: Female vs Male", "Top Aged: Female vs Male",
-          'Bottom Young: Female vs Male', "Central Young: Female vs Male",
-          "Peripheral Young: Female vs Male", "Top Young: Female vs Male"),
-  region = region.vs.region.index.all
+  age = names(age.vs.young),
+  sex = names(female.vs.male),
+  region = names(region.vs.region)
 )
 
-# Combine all data into one large list
-all_deg_data <- list()
-
-# Add age comparisons
-for(i in 1:length(age.vs.young)) {
-  key <- paste("age", comparisons$age[i], sep = "_")
-  all_deg_data[[key]] <- age.vs.young[[i]]
-}
-
-# Add sex comparisons
-for(i in 1:length(female.vs.male)) {
-  key <- paste("sex", comparisons$sex[i], sep = "_")
-  all_deg_data[[key]] <- female.vs.male[[i]]
-}
-
-# Add region comparisons
-for(i in 1:length(region.vs.region)) {
-  key <- paste("region", comparisons$region[i], sep = "_")
-  all_deg_data[[key]] <- region.vs.region[[i]]
-}
+# All result tables in one list, keyed by "<type>_<label>".
+all_deg_data <- c(
+  setNames(age.vs.young, paste("age", names(age.vs.young), sep = "_")),
+  setNames(female.vs.male, paste("sex", names(female.vs.male), sep = "_")),
+  setNames(region.vs.region, paste("region", names(region.vs.region), sep = "_"))
+)
 
 # UI section
 ui <- fluidPage(
-  titlePanel(div("Differential Expression Analysis", 
+  titlePanel(div("Differential Expression Analysis",
+                 tags$br(),
+                 tags$small("Young = 7 weeks; Aged = 7-11 months"),
                  style = "color: #333; padding: 10px")),
   
   sidebarLayout(
@@ -208,15 +192,15 @@ server <- function(input, output, session) {
     # Create color categories
     gene_data$color_category <- "Not Significant"
     gene_data$color_category[gene_data$estimate > input$fc_cutoff & 
-                               gene_data$`???Log10(FDR)` > input$p_cutoff] <- "Up"
+                               gene_data$`-Log10(FDR)` > input$p_cutoff] <- "Up"
     gene_data$color_category[gene_data$estimate < -input$fc_cutoff & 
-                               gene_data$`???Log10(FDR)` > input$p_cutoff] <- "Down"
+                               gene_data$`-Log10(FDR)` > input$p_cutoff] <- "Down"
     
     # Convert to factor with specific order
     gene_data$color_category <- factor(gene_data$color_category, 
                                        levels = c("Not Significant", "Up", "Down"))
     
-    ggplot(gene_data, aes(x = estimate, y = `???Log10(FDR)`)) +
+    ggplot(gene_data, aes(x = estimate, y = `-Log10(FDR)`)) +
       geom_point(aes(color = color_category),
                  size = input$point_size) +
       geom_hline(yintercept = input$p_cutoff, linetype = "dashed") +
@@ -241,21 +225,21 @@ server <- function(input, output, session) {
   output$volcanoPlot <- renderPlot({
     req(input$selected_comparison)
     gene_data <- get_comparison_data()
-    gene_data[,"???Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
+    gene_data[,"-Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
     create_volcano_plot(gene_data)
   })
   
   output$plot_stats <- renderPrint({
     gene_data <- get_comparison_data()
-    gene_data[,"???Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
+    gene_data[,"-Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
     
     # Calculate up-regulated proteins
     up_proteins <- sum(gene_data$estimate > input$fc_cutoff & 
-                         gene_data$`???Log10(FDR)` > input$p_cutoff)
+                         gene_data$`-Log10(FDR)` > input$p_cutoff)
     
     # Calculate down-regulated proteins
     down_proteins <- sum(gene_data$estimate < -input$fc_cutoff & 
-                           gene_data$`???Log10(FDR)` > input$p_cutoff)
+                           gene_data$`-Log10(FDR)` > input$p_cutoff)
     
     # Calculate total significant proteins
     total_sig <- up_proteins + down_proteins
@@ -277,7 +261,7 @@ server <- function(input, output, session) {
                                   maxpoints = 1)
       
       if (nrow(nearest_point) > 0) {
-        nearest_point[,"???Log10(FDR)"] <- nearest_point$neglog10p
+        nearest_point[,"-Log10(FDR)"] <- nearest_point$neglog10p
         nearest_point$neglog10p <- NULL
         cat("Selected Protein:\n")
         print(nearest_point)
@@ -297,7 +281,7 @@ server <- function(input, output, session) {
                            neglog10p >= brush$ymin &
                            neglog10p <= brush$ymax)
       
-      selected[,"???Log10(FDR)"] <- selected$neglog10p
+      selected[,"-Log10(FDR)"] <- selected$neglog10p
       selected$neglog10p <- NULL
       selected_data(selected)
     }
@@ -310,13 +294,13 @@ server <- function(input, output, session) {
       data <- get_comparison_data()
     }
     
-    data[,"???Log10(FDR)"] <- -log10(data$p.value.adjusted)
+    data[,"-Log10(FDR)"] <- -log10(data$p.value.adjusted)
     
     datatable(data,
               options = list(pageLength = 10,
                              scrollX = TRUE),
               rownames = FALSE) %>%
-      formatSignif(columns = c("estimate", "p.value.adjusted", "???Log10(FDR)"), digits = 3)
+      formatSignif(columns = c("estimate", "p.value.adjusted", "-Log10(FDR)"), digits = 3)
   })
   
   output$downloadPlot <- downloadHandler(
@@ -325,7 +309,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       gene_data <- get_comparison_data()
-      gene_data[,"???Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
+      gene_data[,"-Log10(FDR)"] <- -log10(gene_data$p.value.adjusted)
       plot <- create_volcano_plot(gene_data)
       ggsave(file, plot, width = 10, height = 8, dpi = 300)
     }
