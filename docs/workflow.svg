@@ -1,73 +1,149 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1120" viewBox="0 0 1120 1120" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1330" height="880" viewBox="0 0 1330 880" role="img" aria-labelledby="title desc">
   <title id="title">Rat lung proteomics analysis workflow</title>
-  <desc id="desc">Protein annotation feeds peptide counting and preprocessing. Preprocessing supports single-factor, multiple-factor and interaction models. External enrichment produces pathway summaries for plotting. Prepared expression and reference single-cell data support cell-type analysis. Multiple-factor results feed Shiny applications.</desc>
+  <desc id="desc">DIA-NN protein and peptide matrices are annotated and counted (Scripts 1 and 2). Script 3 filters, normalizes and imputes the protein data and supplies Scripts 4, 6, 8 and 9. Single-factor, interaction and multiple-factor results go through external enrichment to the pathway plots of Scripts 5, 8 and 7. Script 9 combines the proteomics matrix with a public scRNA-seq reference. Script 6 results feed the Shiny apps of Script 10.</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#58677d"/></marker>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#5b6b80"/></marker>
+    <marker id="arrow-manual" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#c08a2e"/></marker>
     <style>
-      text {font-family:Arial,Helvetica,sans-serif;fill:#182b45;text-anchor:middle;font-size:17px}
+      text {font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#1d2b3a;text-anchor:middle}
       .heading {font-size:24px;font-weight:700}
-      .node {fill:#edf3fb;stroke:#6086b5;stroke-width:1.5}
-      .external {fill:#fff6e5;stroke:#bd9146;stroke-width:1.5}
-      .edge {fill:none;stroke:#58677d;stroke-width:1.6;marker-end:url(#arrow)}
-      .note {font-size:14px;fill:#475569}
-      .num {font-weight:700}
+      .subheading {font-size:13px;fill:#5b6b80}
+      .band {fill:#f5f7fa}
+      .stage {font-size:11.5px;font-weight:700;fill:#7a8899;text-anchor:start;letter-spacing:0.06em}
+      .module {fill:#eaf2fb;stroke:#3d6fa8;stroke-width:1.6}
+      .external {fill:#fff6e3;stroke:#c08a2e;stroke-width:1.4}
+      .app {fill:#eef7ee;stroke:#3f8a4f;stroke-width:1.6}
+      .title {font-size:15px;font-weight:700}
+      .sub {font-size:12.5px;fill:#41505f}
+      .file {font-size:11.5px;fill:#5b6b80;font-family:Menlo,Consolas,monospace}
+      .edge {fill:none;stroke:#5b6b80;stroke-width:1.6;marker-end:url(#arrow)}
+      .manual {fill:none;stroke:#c08a2e;stroke-width:1.6;stroke-dasharray:6 4;marker-end:url(#arrow-manual)}
+      .label {font-size:11px;fill:#5b6b80;font-family:Menlo,Consolas,monospace}
+      .legend {font-size:12.5px;fill:#41505f;text-anchor:start}
     </style>
   </defs>
-  <rect width="1120" height="1120" fill="white"/>
-  <text class="heading" x="560" y="35">Rat lung proteomics workflow</text>
-  <path class="edge" d="M560 135 V170"/>
-  <path class="edge" d="M560 250 V305"/>
-  <path class="edge" d="M420 210 H180 V245"/>
-  <path class="edge" d="M180 190 V245"/>
-  <path class="edge" d="M560 385 V425 H160 V465"/>
-  <path class="edge" d="M425 425 V465"/>
-  <path class="edge" d="M560 425 H690 V465"/>
-  <path class="edge" d="M933 370 V465" stroke-dasharray="5 4"/>
-  <path class="edge" d="M955 265 V285 H1095 V445 H980 V465"/>
-  <path class="edge" d="M700 345 H790" stroke-dasharray="5 4"/>
-  <path class="edge" d="M160 545 V585"/>
-  <path class="edge" d="M425 545 V585"/>
-  <path class="edge" d="M690 545 V585"/>
-  <path class="edge" d="M160 665 V705"/>
-  <path class="edge" d="M425 665 V705"/>
-  <path class="edge" d="M690 665 V705"/>
-  <path class="edge" d="M545 505 H557 V815 H955 V840"/>
-  <rect class="external" x="420" y="65" width="280" height="70" rx="7"/>
-  <text x="560" y="94"><tspan x="560">DIA-NN protein matrix</tspan><tspan x="560" dy="24">and annotation resources</tspan></text>
-  <rect class="node" x="420" y="170" width="280" height="80" rx="7"/>
-  <text x="560" y="202"><tspan class="num" x="560">1 · Protein counts</tspan><tspan x="560" dy="25">and annotation</tspan></text>
-  <rect class="external" x="60" y="120" width="240" height="70" rx="7"/>
-  <text x="180" y="148"><tspan x="180">Peptide table</tspan><tspan x="180" dy="24">and sample metadata</tspan></text>
-  <rect class="node" x="60" y="245" width="240" height="70" rx="7"/>
-  <text x="180" y="275"><tspan class="num" x="180">2 · Peptide counts</tspan><tspan x="180" dy="23">Coverage summary</tspan></text>
-  <rect class="node" x="420" y="305" width="280" height="80" rx="7"/>
-  <text x="560" y="329"><tspan class="num" x="560">3 · Preprocessing</tspan><tspan x="560" dy="23">Filter, normalize, impute</tspan><tspan x="560" dy="23">Quality control</tspan></text>
-  <rect class="external" x="835" y="195" width="240" height="70" rx="7"/>
-  <text x="955" y="223"><tspan x="955">Reference scRNA-seq</tspan><tspan x="955" dy="24">matrices and metadata</tspan></text>
-  <rect class="external" x="790" y="305" width="285" height="65" rx="7"/>
-  <text x="933" y="331"><tspan x="933">Prepared expression</tspan><tspan x="933" dy="23">and metadata workbooks</tspan></text>
-  <rect class="node" x="40" y="465" width="240" height="80" rx="7"/>
-  <text x="160" y="497"><tspan class="num" x="160">4 · Single-factor</tspan><tspan x="160" dy="25">differential expression</tspan></text>
-  <rect class="node" x="305" y="465" width="240" height="80" rx="7"/>
-  <text x="425" y="497"><tspan class="num" x="425">6 · Multiple-factor</tspan><tspan x="425" dy="25">differential expression</tspan></text>
-  <rect class="node" x="570" y="465" width="240" height="80" rx="7"/>
-  <text x="690" y="489"><tspan class="num" x="690">8 · Interaction models</tspan><tspan x="690" dy="23">Age × sex</tspan><tspan x="690" dy="23">Age × region</tspan></text>
-  <rect class="node" x="835" y="465" width="240" height="80" rx="7"/>
-  <text x="955" y="489"><tspan class="num" x="955">9 · Cell-type analysis</tspan><tspan x="955" dy="23">Regional protein markers</tspan><tspan x="955" dy="23">and marker scores</tspan></text>
-  <rect class="external" x="40" y="585" width="240" height="80" rx="7"/>
-  <text x="160" y="617"><tspan x="160">External ORA / GSEA</tspan><tspan x="160" dy="25">and curated summaries</tspan></text>
-  <rect class="external" x="305" y="585" width="240" height="80" rx="7"/>
-  <text x="425" y="609"><tspan x="425">Comparison summaries</tspan><tspan x="425" dy="23">External ORA</tspan><tspan x="425" dy="23">and curation</tspan></text>
-  <rect class="external" x="570" y="585" width="240" height="80" rx="7"/>
-  <text x="690" y="617"><tspan x="690">External GSEA</tspan><tspan x="690" dy="25">and curated summaries</tspan></text>
-  <rect class="node" x="40" y="705" width="240" height="80" rx="7"/>
-  <text x="160" y="737"><tspan class="num" x="160">5 · Single-factor</tspan><tspan x="160" dy="25">pathway plots</tspan></text>
-  <rect class="node" x="305" y="705" width="240" height="80" rx="7"/>
-  <text x="425" y="737"><tspan class="num" x="425">7 · Protein-set overlap</tspan><tspan x="425" dy="25">and stratified ORA plots</tspan></text>
-  <rect class="node" x="570" y="705" width="240" height="80" rx="7"/>
-  <text x="690" y="737"><tspan class="num" x="690">8 · Interaction</tspan><tspan x="690" dy="25">GSEA plots</tspan></text>
-  <rect class="node" x="835" y="840" width="240" height="80" rx="7"/>
-  <text x="955" y="864"><tspan class="num" x="955">10 · Shiny helpers</tspan><tspan x="955" dy="23">Protein explorer</tspan><tspan x="955" dy="23">Volcano explorer</tspan></text>
-  <text class="note" x="350" y="886">Blue: analysis modules · Gold: external / prepared inputs</text>
-  <text class="note" x="350" y="910">Dashed: separately prepared input; conversion not automated</text>
+
+  <rect width="1330" height="880" fill="#ffffff"/>
+  <text class="heading" x="730" y="34">Rat lung proteomics analysis workflow</text>
+  <text class="subheading" x="730" y="54">Numbers are script folders; arrows show which outputs each script needs from earlier scripts</text>
+
+  <!-- stage bands -->
+  <rect class="band" x="12" y="70" width="1306" height="84" rx="8"/>
+  <rect class="band" x="12" y="168" width="1306" height="226" rx="8"/>
+  <rect class="band" x="12" y="432" width="1306" height="122" rx="8"/>
+  <rect class="band" x="12" y="582" width="1306" height="84" rx="8"/>
+  <rect class="band" x="12" y="694" width="1306" height="104" rx="8"/>
+  <text class="stage" x="26" y="106">INPUT</text><text class="stage" x="26" y="122">DATA</text>
+  <text class="stage" x="26" y="270">COUNTS AND</text><text class="stage" x="26" y="286">PREPROCESSING</text>
+  <text class="stage" x="26" y="486">STATISTICAL</text><text class="stage" x="26" y="502">MODELS</text>
+  <text class="stage" x="26" y="618">EXTERNAL</text><text class="stage" x="26" y="634">ENRICHMENT</text>
+  <text class="stage" x="26" y="740">FIGURES</text><text class="stage" x="26" y="756">AND APPS</text>
+
+  <!-- edges (drawn first, under the boxes) -->
+  <path class="edge" d="M295 146 V182"/>
+  <path class="edge" d="M730 146 V182"/>
+  <path class="edge" d="M575 219 H422"/>
+  <text class="label" x="498" y="211">Raw_table_annotation</text>
+  <path class="edge" d="M730 256 V310"/>
+  <text class="label" x="742" y="288" style="text-anchor:start">Protein_counts_summary.xlsx</text>
+  <path class="edge" d="M730 384 V414 H295 V442"/>
+  <path class="edge" d="M585 414 V442"/>
+  <path class="edge" d="M875 414 V442"/>
+  <path class="edge" d="M730 414 H1130 V442"/>
+  <text class="label" x="742" y="406" style="text-anchor:start">data_tables.RData · protein_intensity.xlsx · imputed matrix</text>
+  <path class="edge" d="M1230 146 V442"/>
+  <text class="label" x="1238" y="290" style="text-anchor:start">raw counts</text>
+  <path class="manual" d="M295 544 V592"/>
+  <path class="manual" d="M585 544 V592"/>
+  <path class="manual" d="M875 544 V592"/>
+  <text class="label" x="887" y="572" style="text-anchor:start">DEP lists</text>
+  <path class="edge" d="M295 656 V704"/>
+  <path class="edge" d="M585 656 V704"/>
+  <path class="edge" d="M875 656 V704"/>
+  <path class="edge" d="M1000 500 H1020 V746 H1040"/>
+  <text class="label" x="1014" y="678" transform="rotate(-90 1014 678)">Script_6 RData</text>
+
+  <!-- input data -->
+  <rect class="external" x="170" y="80" width="250" height="66" rx="9"/>
+  <text class="title" x="295" y="106">Peptide table</text>
+  <text class="file" x="295" y="126">Peptide.xlsx (DIA-NN)</text>
+
+  <rect class="external" x="460" y="80" width="540" height="66" rx="9"/>
+  <text class="title" x="730" y="106">DIA-NN protein-group matrix and annotation</text>
+  <text class="file" x="730" y="126">report.pg_matrix.tsv · UniProt · MatrisomeAnalyzer</text>
+
+  <rect class="external" x="1040" y="80" width="250" height="66" rx="9"/>
+  <text class="title" x="1165" y="106">Rat lung scRNA-seq</text>
+  <text class="file" x="1165" y="126">GEO GSE133747</text>
+
+  <!-- counts and preprocessing -->
+  <rect class="module" x="170" y="182" width="250" height="74" rx="9"/>
+  <text class="title" x="295" y="210">2 · Peptide counts</text>
+  <text class="file" x="295" y="232">Peptide_counts_summary.xlsx</text>
+
+  <rect class="module" x="575" y="182" width="310" height="74" rx="9"/>
+  <text class="title" x="730" y="210">1 · Protein counts &amp; annotation</text>
+  <text class="file" x="730" y="232">Protein_counts_summary.xlsx</text>
+
+  <rect class="module" x="575" y="310" width="310" height="74" rx="9"/>
+  <text class="title" x="730" y="338">3 · Preprocessing and QC</text>
+  <text class="sub" x="730" y="360">filter · normalize · impute · QC</text>
+
+  <!-- statistical models -->
+  <rect class="module" x="170" y="442" width="250" height="102" rx="9"/>
+  <text class="title" x="295" y="470">4 · Single-factor DE</text>
+  <text class="sub" x="295" y="491">age, sex and region main effects</text>
+  <text class="file" x="295" y="516">Single_factor_DEP_summary</text>
+
+  <rect class="module" x="460" y="442" width="250" height="102" rx="9"/>
+  <text class="title" x="585" y="470">8 · Interaction contrasts</text>
+  <text class="sub" x="585" y="491">age × sex · age × region</text>
+  <text class="file" x="585" y="516">interaction protein lists</text>
+
+  <rect class="module" x="750" y="442" width="250" height="102" rx="9"/>
+  <text class="title" x="875" y="470">6 · Multiple-factor DE</text>
+  <text class="sub" x="875" y="491">8 age · 8 sex · 24 region contrasts</text>
+  <text class="file" x="875" y="516">*.vs.*4.xlsx · summary_table3</text>
+
+  <rect class="module" x="1040" y="442" width="250" height="102" rx="9"/>
+  <text class="title" x="1165" y="470">9 · Cell-type analysis</text>
+  <text class="sub" x="1165" y="491">step 1 Seurat · step 2 proteomics</text>
+  <text class="file" x="1165" y="516">marker scores · signatures</text>
+
+  <!-- external enrichment -->
+  <rect class="external" x="170" y="592" width="250" height="64" rx="9"/>
+  <text class="title" x="295" y="618">ORA / GSEA</text>
+  <text class="sub" x="295" y="639">WebGestalt, curated summaries</text>
+
+  <rect class="external" x="460" y="592" width="250" height="64" rx="9"/>
+  <text class="title" x="585" y="618">GSEA on ranked estimates</text>
+  <text class="sub" x="585" y="639">WebGestalt, curated summaries</text>
+
+  <rect class="external" x="750" y="592" width="250" height="64" rx="9"/>
+  <text class="title" x="875" y="618">ORA</text>
+  <text class="sub" x="875" y="639">WebGestalt · PANTHER, curated</text>
+
+  <!-- figures and apps -->
+  <rect class="module" x="170" y="704" width="250" height="84" rx="9"/>
+  <text class="title" x="295" y="736">5 · Single-factor pathways</text>
+  <text class="sub" x="295" y="758">ORA and GSEA plots</text>
+
+  <rect class="module" x="460" y="704" width="250" height="84" rx="9"/>
+  <text class="title" x="585" y="736">8 · Interaction GSEA</text>
+  <text class="sub" x="585" y="758">GSEA plots</text>
+
+  <rect class="module" x="750" y="704" width="250" height="84" rx="9"/>
+  <text class="title" x="875" y="736">7 · Overlap and stratified ORA</text>
+  <text class="sub" x="875" y="758">UpSet plots · ORA plots</text>
+
+  <rect class="app" x="1040" y="704" width="250" height="84" rx="9"/>
+  <text class="title" x="1165" y="736">10 · Shiny apps</text>
+  <text class="sub" x="1165" y="758">protein and volcano explorers</text>
+
+  <!-- legend -->
+  <rect class="module" x="170" y="820" width="22" height="16" rx="4"/><text class="legend" x="200" y="833">R script module</text>
+  <rect class="app" x="330" y="820" width="22" height="16" rx="4"/><text class="legend" x="360" y="833">interactive app</text>
+  <rect class="external" x="485" y="820" width="22" height="16" rx="4"/><text class="legend" x="515" y="833">input data / external tool</text>
+  <path class="edge" d="M700 828 H740"/><text class="legend" x="750" y="833">file passed to the next script</text>
+  <path class="manual" d="M960 828 H1000"/><text class="legend" x="1010" y="833">manual step (external enrichment)</text>
 </svg>
