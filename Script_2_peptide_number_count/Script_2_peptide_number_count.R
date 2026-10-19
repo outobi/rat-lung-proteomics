@@ -23,7 +23,7 @@
 #   - Sample_metadata.xlsx
 #       96 rows in S1-S96 order. Columns Sample.ID, Sample.group, PID,
 #       Investigator Animal Number, Age, Region, Sex.
-#       Age labels "Young" / "Aged" denote peripubertal / young adult rats.
+#       Age labels "Young" / "Aged" denote 7-week-old (7w) / 7-11-month-old (7-11m) rats.
 #
 # Output (written to this folder):
 #   - Peptide_counts_summary.xlsx
@@ -166,7 +166,7 @@ sample.id <- as.data.frame(paste0("S", 1:96))   # not used below
 
 
 # Read sample identifiers and experimental group assignments.
-# Sample.group codes: 1st letter = age (Y = peripubertal, A = young adult;
+# Sample.group codes: 1st letter = age (Y = 7w, A = 7-11m;
 # labelled "Young" / "Aged" in the Age column of Sample_metadata.xlsx),
 # 2nd = lung region (B = Bottom, T = Top, C = Central, P = Peripheral),
 # 3rd = sex (F/M); 6 samples per group.

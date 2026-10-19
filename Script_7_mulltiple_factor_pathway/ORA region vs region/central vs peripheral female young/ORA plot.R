@@ -1,6 +1,6 @@
 # =============================================================================
 # Script 7 (ORA region vs region): ORA dot plots, Central vs Peripheral,
-#   female young (peripubertal) rats (multiple-factor model)
+#   female young (7w) rats (multiple-factor model)
 # =============================================================================
 #
 # Purpose:

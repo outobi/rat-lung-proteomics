@@ -8,7 +8,7 @@
 #   subgroups (Bottom / Central / Peripheral / Top x Aged / Young), separately
 #   for proteins higher in females and proteins higher in males, and export
 #   the protein lists behind each UpSet bar.
-#   (Aged = young adult; Young = peripubertal.)
+#   (Aged = 7-11m; Young = 7w.)
 #
 # Input (in this folder):
 #   - Female vs male DEP in 8 pairwise groups.xlsx

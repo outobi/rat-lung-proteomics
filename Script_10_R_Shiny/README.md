@@ -60,7 +60,7 @@ Stop the running application before launching the other. The applications load t
 
 ## Comparisons and direction
 
-The archive contains 40 comparisons: 8 age comparisons, 8 sex comparisons and 24 regional comparisons. Young = 7 weeks (peripubertal); Aged = 7-11 months (young adult).
+The archive contains 40 comparisons: 8 age comparisons, 8 sex comparisons and 24 regional comparisons. Young = 7-week-old (7w); Aged = 7-11-month-old (7-11m).
 
 | Family | Comparisons | Positive estimate | Negative estimate |
 |---|---|---|---|

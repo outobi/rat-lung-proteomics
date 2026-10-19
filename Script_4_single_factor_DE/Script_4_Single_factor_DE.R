@@ -13,7 +13,7 @@
 #   age-associated matrisome proteins.
 #
 # Contrast directions (estimate = log2 difference, first level minus second):
-#   - Age:    Aged - Young     (A = young adult minus Y = peripubertal;
+#   - Age:    Aged - Young     (A = 7-11m minus Y = 7w;
 #                               labelled "Aged" / "Young" in the metadata)
 #   - Sex:    Female - Male
 #   - Region: Bottom - Central, Bottom - Peripheral, Bottom - Top,

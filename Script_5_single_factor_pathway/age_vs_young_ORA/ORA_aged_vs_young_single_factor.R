@@ -5,7 +5,7 @@
 #
 # Purpose:
 #   Plot pre-computed ORA results (GO and Reactome) for proteins that differ
-#   between Aged (A = young adult) and Young (Y = peripubertal) rats in the
+#   between Aged (A = 7-11m) and Young (Y = 7w) rats in the
 #   single-factor model of Script_4. This script only draws figures; the
 #   enrichment analysis itself was run outside R.
 #

@@ -6,10 +6,10 @@ This is a manuscript analysis archive, not a single-command pipeline. Each numbe
 
 ## Sample terminology
 
-- **PP:** peripubertal (7 weeks); **YA:** young adult (7–11 months).
+- **Y / Young:** 7-week-old rats (7w); **A / Aged:** 7-11-month-old rats (7-11m).
 - **F / M:** female / male.
 - **B / C / P / T:** bottom / central / peripheral / top lung region.
-- Filenames, model labels and the Shiny apps use `Young` or `Y` for PP and `Aged` or `A` for YA. These are the same study groups, not additional age cohorts. Sample-group codes are written age–region–sex (e.g. `YCF` = PP, central, female).
+- Sample-group codes are written age–region–sex, e.g. `ABF` = 7-11m, bottom, female; `YBF` = 7w, bottom, female. Filenames, model labels and the Shiny apps use `Young` / `Aged`; the supplementary tables use `7w` / `7-11m`.
 
 ## Workflow
 
@@ -27,7 +27,7 @@ Arrows describe data dependencies, not automatic file transfer. Script 2 is a co
 | [4 — Single-factor comparisons](Script_4_single_factor_DE/) | `Script_4_Single_factor_DE.R` fits `Protein ~ Age + Sex + Region + (1 \| Subject)` and reports age, sex and regional main-effect contrasts: `Single_factor_DEP_summary.xlsx`, volcano plots, DEP count bar plots and the matrisome heatmap. “Single-factor” describes the reported contrasts, not an unadjusted one-predictor model. |
 | [5 — Single-factor pathways](Script_5_single_factor_pathway/) | Four subfolders (`age_vs_young_ORA`, `age_vs_young_GSEA`, `female_vs_male_GSEA`, `region_vs_region_GSEA`) plot curated ORA/GSEA summaries (WebGestalt) for the Script 4 contrasts. |
 | [6 — Multiple-factor comparisons](Script_6_multiple_factor_DE/) | `Script_6_multiple_factor_DE.R` fits the mixed model with all two-way interactions and an animal random intercept, then tests 8 age, 8 sex and 24 regional within-subgroup contrasts (Method 4: ≥ 5 observed values in either group, BH within each comparison). Exports `age.vs.young4.xlsx`, `female.vs.male4.xlsx`, `region.vs.region4.xlsx`, DEP summaries, volcano plots, the matrisome heatmap, boxplots and the correlation map. |
-| [7 — Overlap and stratified ORA](Script_7_mulltiple_factor_pathway/) | UpSet plots and ORA input lists for the Script 6 age and sex DEPs, ORA bar plots grouped by sex and region, and central-versus-bottom/peripheral ORA dot plots in PP females and males. |
+| [7 — Overlap and stratified ORA](Script_7_mulltiple_factor_pathway/) | UpSet plots and ORA input lists for the Script 6 age and sex DEPs, ORA bar plots grouped by sex and region, and central-versus-bottom/peripheral ORA dot plots in 7w females and males. |
 | [8 — Interaction analysis](Script_8_multiple_factor_age_x_sex_and_age_x_region_interaction/) | `interaction contrast of contrast/` tests Age × Sex and Age × Region interaction contrasts (interaction protein lists and volcano plots); `interaction GSEA/` plots curated WebGestalt GSEA results ranked by the interaction estimates. |
 | [9 — Regional cell-type analysis](Script_9_region_cell_type_enrichment_with_scRNAseq/) | Two subfolders, each split into step 1 (Seurat reference from GEO GSE133747) and step 2 (proteomics analysis): cell-type marker scores compared across regions, and region-specific protein signatures scored across scRNA-seq cell types. |
 | [10 — Interactive exploration](Script_10_R_Shiny/) | `Script-10_R_Shiny.R` prepares helper data from the Script 6 results; `apps/protein_explorer/` and `apps/volcano_explorer/` display precomputed results without refitting models. |
@@ -57,7 +57,7 @@ Script_7_mulltiple_factor_pathway/
 
 Each regional ORA folder contains `ORA plot.R`, the selected-terms workbook and the figure. ORA was run in PANTHER (Fisher's exact test, FDR; reference: all *Rattus norvegicus* genes); the raw PANTHER output is not kept.
 
-**Script 8** — `interaction contrast of contrast/age_sex_and_age_region_interaction.R` is self-contained (loads the Script 3 outputs). `interaction GSEA/Script_8_interaction_GSEA_plots.R` plots age-by-sex GO/Reactome, B–P GO, C–P GO and C–T GO/Reactome results. These interaction results are distinct from Script 5's regional main-effect comparisons.
+**Script 8** — `interaction contrast of contrast/Script8_age_sex_and_age_region_interaction.R` is self-contained (loads the Script 3 outputs). `interaction GSEA/Script_8_interaction_GSEA_plots.R` plots age-by-sex GO/Reactome, B–P GO, C–P GO and C–T GO/Reactome results. These interaction results are distinct from Script 5's regional main-effect comparisons.
 
 **Script 9** — run step 1, then step 2, in each subfolder:
 

@@ -7,7 +7,7 @@
 # Purpose:
 #   1. Show how the age DEPs of Script_6 overlap between the 8 sex x region
 #      subgroups (UpSet plots), separately for proteins higher in Aged and
-#      proteins higher in Young (Aged = young adult; Young = peripubertal).
+#      proteins higher in Young (Aged = 7-11m; Young = 7w).
 #   2. Pool the DEPs by sex (across regions) and by region (across sexes) and
 #      export the 12 protein lists used as ORA input. The ORA was run outside
 #      R; the Venn diagrams in Figures S11a/b were drawn manually.

@@ -20,6 +20,8 @@
 #       Returned by the external MatrisomeAnalyzer web tool (see Step 3).
 #   - Sample_index.xlsx
 #       Columns Index, Sample.ID (S1-S96), Sample.group (16 groups, e.g. ABF).
+#       In the group codes, A = aged (7-11-month-old, 7-11m) and Y = young
+#       (7-week-old, 7w); e.g. ABF = 7-11m Bottom Female, YBF = 7w Bottom Female.
 #
 # Outputs (written to this folder):
 #   - Matrisome_annotation_input.xlsx
@@ -181,7 +183,7 @@ sample.id <- as.data.frame(paste0("S", 1:96))   # not used below
 
 
 # Read sample identifiers and experimental group assignments.
-# Sample.group codes: 1st letter = age (Y = peripubertal, A = young adult),
+# Sample.group codes: 1st letter = age (Y = 7w, A = 7-11m),
 # 2nd = lung region (B = Bottom, T = Top, C = Central, P = Peripheral),
 # 3rd = sex (F/M); 6 samples per group.
 sample.table <- read_excel("Sample_index.xlsx")

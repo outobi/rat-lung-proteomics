@@ -6,12 +6,12 @@
 # Purpose:
 #   Plot selected gene set enrichment analysis (GSEA) results for the
 #   interaction contrasts of "interaction contrast of contrast"
-#   (age_sex_and_age_region_interaction.R). This script only draws figures;
+#   (Script8_age_sex_and_age_region_interaction.R). This script only draws figures;
 #   the GSEA was run in WebGestalt (https://www.webgestalt.org/) with all
 #   3,600 proteins ranked by the interaction estimate:
 #     - Age x Sex:    (Aged - Young)Female - (Aged - Young)Male
 #     - Age x Region: (Aged - Young)Region1 - (Aged - Young)Region2
-#   (Aged = young adult; Young = peripubertal.)
+#   (Aged = 7-11m; Young = 7w.)
 #
 # NES direction:
 #   Positive NES = gene set enriched where the age effect is larger in the

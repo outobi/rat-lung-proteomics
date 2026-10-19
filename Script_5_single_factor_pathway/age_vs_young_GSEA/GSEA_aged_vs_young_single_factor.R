@@ -5,8 +5,8 @@
 #
 # Purpose:
 #   Plot pre-computed GSEA results (GO and Reactome) for the Aged vs Young
-#   comparison of the single-factor model in Script_4 (A = young adult,
-#   Y = peripubertal). This script only draws figures; the enrichment
+#   comparison of the single-factor model in Script_4 (A = 7-11m,
+#   Y = 7w). This script only draws figures; the enrichment
 #   analysis itself was run outside R.
 #
 # NES direction:

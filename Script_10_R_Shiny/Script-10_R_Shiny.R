@@ -6,7 +6,7 @@
 #   Package the multiple-factor differential-expression results of Script_6
 #   (8 age, 8 sex and 24 region comparisons) for the two Shiny apps in
 #   apps/. The apps do not refit models or recompute adjusted p-values.
-#   (Young = 7 weeks, peripubertal; Aged = 7-11 months, young adult.)
+#   (Young = 7-week-old, 7w; Aged = 7-11-month-old, 7-11m.)
 #
 # Input (in this folder):
 #   - Script_6_multiple_factor_DE.RData

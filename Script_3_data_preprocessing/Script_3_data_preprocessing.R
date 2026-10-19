@@ -19,7 +19,7 @@
 #   - Sample_metadata.xlsx
 #       96 rows in S1-S96 order. Columns Sample.ID, Sample.group, PID,
 #       Investigator Animal Number, Age, Region, Sex.
-#       Age labels "Young" / "Aged" denote peripubertal / young adult rats.
+#       Age labels "Young" / "Aged" denote 7-week-old (7w) / 7-11-month-old (7-11m) rats.
 #
 # Outputs (written to this folder):
 #   - UW.Madison.rat.lung.proteomics analysis log.txt
@@ -80,11 +80,11 @@ sample_info <- "Sample_metadata.xlsx"
 species <- "rat"                                   # not used below
 
 # Order of the 16 experimental groups (factor levels and output columns).
-# Sample.group codes: 1st letter = age (Y = peripubertal, A = young adult),
+# Sample.group codes: 1st letter = age (Y = 7w, A = 7-11m),
 # 2nd = lung region (T = Top, C = Central, P = Peripheral, B = Bottom),
 # 3rd = sex (M/F); 6 samples per group.
 sample_order <- c("YTM", "YCM", "YPM", "YBM", "YTF", "YCF", "YPF", "YBF", "ATM", "ACM", "APM", "ABM", "ATF", "ACF", "APF", "ABF")
-# to save space and keep consistency, Y means peripubertal, while A means young adult in all the following analysis
+# Y = young (7-week-old, 7w) and A = aged (7-11-month-old, 7-11m) in all following analyses.
 
 # Start a new log file (overwrites any existing log).
 log_file <- paste0(study_number, " analysis log.txt")

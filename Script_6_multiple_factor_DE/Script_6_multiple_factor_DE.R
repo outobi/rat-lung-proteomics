@@ -12,7 +12,7 @@
 #     - Age:    Aged - Young     within each Region x Sex   ( 8 comparisons)
 #     - Sex:    Female - Male    within each Region x Age   ( 8 comparisons)
 #     - Region: 6 region pairs   within each Age x Sex      (24 comparisons)
-#   (A = Aged = young adult; Y = Young = peripubertal.)
+#   (A = Aged = 7-11m; Y = Young = 7w.)
 #   Then count DEPs and draw bar plots, volcano plots, a heatmap, boxplots
 #   and a correlation map for the age comparisons.
 #
@@ -831,7 +831,7 @@ rownames(summary_table4) <- matrisome_dep_list$Gene.symbol
 # original pheatmap default (range -2.13 to 1.77 in the reported run);
 # the two middle bins are replaced by one white bin from -0.585 to 0.585
 # (the zeros: not a DEP or filtered out). Result: 5 blue bins (higher in
-# Young = peripubertal), white, 4 red bins (higher in Aged = young adult).
+# Young = 7w), white, 4 red bins (higher in Aged = 7-11m).
 heatmap_fc_cut <- log2(1.5)
 heatmap_matrix <- as.matrix(summary_table4)
 heatmap_bins <- seq(min(heatmap_matrix), max(heatmap_matrix), length.out = 12)

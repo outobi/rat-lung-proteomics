@@ -10,8 +10,8 @@
 #   reference from step 1.
 #
 # Workflow:
-#   1. Region-specific proteins: within Young (peripubertal) and within Aged
-#      (young adult) samples separately, compare each region with the other
+#   1. Region-specific proteins: within Young (7w) and within Aged
+#      (7-11m) samples separately, compare each region with the other
 #      three regions for each of the 3,600 proteins (two-sided Wilcoxon
 #      rank-sum test, unpaired; BH across proteins). Log2FC = mean log2
 #      intensity in the region minus mean in the other regions.

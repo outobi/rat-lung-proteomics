@@ -4,8 +4,8 @@
 # =============================================================================
 #
 # Purpose:
-#   Test whether the age effect (Aged - Young; Aged = young adult,
-#   Young = peripubertal) differs between sexes or between lung regions.
+#   Test whether the age effect (Aged - Young; Aged = 7-11m,
+#   Young = 7w) differs between sexes or between lung regions.
 #   For each of the 3,600 filtered and imputed protein groups from Script_3,
 #   fit the same linear mixed model as Script_6:
 #       Protein ~ Age + Sex + Region + Age:Region + Sex:Region + Age:Sex
