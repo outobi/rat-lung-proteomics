@@ -42,7 +42,8 @@ Arrows describe data dependencies, not automatic file transfer. Script 2 is a co
 Script_7_mulltiple_factor_pathway/
 ├── Upset female vs male/
 │   ├── UpSet_female_vs_male.R
-│   └── Female vs male DEP in 8 pairwise groups.xlsx
+│   ├── Female vs male DEP in 8 pairwise groups.xlsx
+│   └── Figure_S9a/b_UpSet_up_in_female/male.pdf   (Fig. S9a, S9b)
 ├── ORA age vs young grouped by sex and region/
 │   ├── Aged_vs_young_ORA_grouped_by_sex_and_region.R
 │   ├── summary_table3.xlsx            (from Script 6)
@@ -132,7 +133,7 @@ For each script: the files it reads (and which earlier script or external source
 
 | Inputs | From | Outputs | Used by |
 |---|---|---|---|
-| `Female vs male DEP in 8 pairwise groups.xlsx` | Script 6 (sex DEPs) | UpSet PDFs and intersection protein lists | *figures only* |
+| `Female vs male DEP in 8 pairwise groups.xlsx` | Script 6 (sex DEPs) | UpSet PDFs (`Figure_S9a/b_…`, Fig. S9a, S9b) and intersection protein lists | *figures only* |
 | `summary_table3.xlsx` | Script 6 | 12 pooled DEP lists (`female_up.xlsx`, `bottom_down.xlsx`, …) | *external* (ORA input) |
 | `ORA summary on sex.xlsx`, `ORA summary on region.xlsx` | *external* (ORA of the lists above; curated) | ORA bar-plot PDFs; workspace | *figures only* |
 | `Central_vs_*_ORA_selected.xlsx` | *external* (PANTHER ORA of Script 6 region DEPs; curated) | regional ORA dot-plot PDFs; workspaces | *figures only* |

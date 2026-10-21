@@ -20,8 +20,8 @@
 #         "8 groups up in male":   Female < Male (10/7/8/3/1/4/7/1 genes)
 #
 # Outputs (written to this folder):
-#   - Figure_S10a_UpSet_up_in_female.pdf   (Figure S10a)
-#   - Figure_S10b_UpSet_up_in_male.pdf     (Figure S10b)
+#   - Figure_S9a_UpSet_up_in_female.pdf    (Figure S9a)
+#   - Figure_S9b_UpSet_up_in_male.pdf      (Figure S9b)
 #   - protein_lists_by_intersection_female.txt / _male.txt
 #       Proteins in each exact intersection (membership pattern) shown in the
 #       UpSet plot, sorted by size.
@@ -42,7 +42,7 @@ library(UpSetR)
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 
-# Female-enriched protein sets: Figure S10a --------------------------------------
+# Female-enriched protein sets: Figure S9a --------------------------------------
 female_group <- read_excel(
   "Female vs male DEP in 8 pairwise groups.xlsx",
   sheet = "8 groups up in female"
@@ -98,15 +98,15 @@ binary_matrix_female[Top_Young, "Top_Young"] <- 1
 # Convert to a data frame for UpSetR.
 upset_data_female <- as.data.frame(binary_matrix_female)
 
-# Make Figure S10a.
+# Make Figure S9a.
 upset_plot_female <- upset(
   upset_data_female,
   nsets = 8,
   order.by = "freq"
 )
 
-# Save Figure S10a without an extra blank page.
-pdf("Figure_S10a_UpSet_up_in_female.pdf", width = 10, height = 7)
+# Save Figure S9a without an extra blank page.
+pdf("Figure_S9a_UpSet_up_in_female.pdf", width = 10, height = 7)
 print(upset_plot_female, newpage = FALSE)
 dev.off()
 
@@ -189,7 +189,7 @@ cat("Intersection protein lists saved to", output_file, "\n")
 cat("Individual group lists saved to", output_file2, "\n")
 
 
-# Male-enriched protein sets: Figure S10b ----------------------------------------
+# Male-enriched protein sets: Figure S9b ----------------------------------------
 male_group <- read_excel(
   "Female vs male DEP in 8 pairwise groups.xlsx",
   sheet = "8 groups up in male"
@@ -245,15 +245,15 @@ binary_matrix_male[Top_Young, "Top_Young"] <- 1
 # Convert to a data frame for UpSetR.
 upset_data_male <- as.data.frame(binary_matrix_male)
 
-# Make Figure S10b.
+# Make Figure S9b.
 upset_plot_male <- upset(
   upset_data_male,
   nsets = 8,
   order.by = "freq"
 )
 
-# Save Figure S10b without an extra blank page.
-pdf("Figure_S10b_UpSet_up_in_male.pdf", width = 10, height = 7)
+# Save Figure S9b without an extra blank page.
+pdf("Figure_S9b_UpSet_up_in_male.pdf", width = 10, height = 7)
 print(upset_plot_male, newpage = FALSE)
 dev.off()
 
