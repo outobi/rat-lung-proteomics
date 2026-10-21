@@ -81,9 +81,18 @@ rownames(expr) <- expr$Uniprot.ID
 
 celltype_markers <- read.csv("Raredon_rat_celltype_FindAllMarkers.csv", check.names = FALSE)
 
-# Keep the cell-type order of the Seurat output (factor levels in order of
-# first appearance), as when step 1 and step 2 ran in one session.
-celltype_markers$cluster <- factor(celltype_markers$cluster, levels = unique(celltype_markers$cluster))
+# Cell-type order used in all outputs (tables and heatmap), grouped by
+# compartment: epithelial, endothelial, mesenchymal, immune.
+cell_order <- c(
+  "ATI", "ATII", "Airway epithelial", "Sox9+ epithelial",
+  "Capillary endothelial", "Vascular endothelial", "VCAM1+ endothelial",
+  "Fibroblast", "Smooth muscle", "Mesothelial",
+  "Alveolar macrophage", "Interstitial macrophage", "Mrc1+ macrophage",
+  "Monocyte", "Dendritic cell", "pDC/DC", "Neutrophil", "Mast cell",
+  "T cell", "B cell", "NK cell"
+)
+stopifnot(setequal(cell_order, unique(celltype_markers$cluster)))
+celltype_markers$cluster <- factor(celltype_markers$cluster, levels = cell_order)
 
 
 # Step 2: Select cell-type markers ---------------------------------------------
@@ -103,12 +112,12 @@ celltype_markers_protein <- celltype_markers_specific %>%
   filter(gene %in% expr$Gene.symbol)
 table(celltype_markers_protein$cluster)
 # Reported run:
-#   VCAM1+ endothelial 136, Alveolar macrophage 471, ATI 328,
-#   Vascular endothelial 87, T cell 66, NK cell 78, Monocyte 146, B cell 34,
-#   ATII 167, Mast cell 45, Airway epithelial 362, Dendritic cell 231,
-#   Sox9+ epithelial 293, Neutrophil 47, Mrc1+ macrophage 45,
-#   Interstitial macrophage 131, Capillary endothelial 153, Mesothelial 483,
-#   Fibroblast 200, Smooth muscle 99, pDC/DC 279
+#   ATI 328, ATII 167, Airway epithelial 362, Sox9+ epithelial 293,
+#   Capillary endothelial 153, Vascular endothelial 87, VCAM1+ endothelial 136,
+#   Fibroblast 200, Smooth muscle 99, Mesothelial 483,
+#   Alveolar macrophage 471, Interstitial macrophage 131, Mrc1+ macrophage 45,
+#   Monocyte 146, Dendritic cell 231, pDC/DC 279, Neutrophil 47, Mast cell 45,
+#   T cell 66, B cell 34, NK cell 78
 
 # Top 30 per cell type by avg_log2FC.
 celltype_marker_top30 <- celltype_markers_protein %>%
@@ -271,15 +280,7 @@ heatmap_mat <- emm_region %>%
 rownames(heatmap_mat) <- heatmap_mat$Cell.type
 heatmap_mat$Cell.type <- NULL
 
-# Cell types grouped by compartment.
-cell_order <- c(
-  "ATI", "ATII", "Airway epithelial", "Sox9+ epithelial",
-  "Fibroblast", "Smooth muscle", "Mesothelial",
-  "Capillary endothelial", "Vascular endothelial", "VCAM1+ endothelial",
-  "Alveolar macrophage", "Interstitial macrophage", "Mrc1+ macrophage",
-  "Monocyte", "Dendritic cell", "pDC/DC", "Neutrophil", "Mast cell",
-  "T cell", "B cell", "NK cell"
-)
+# Rows in cell_order (Step 1).
 heatmap_mat <- heatmap_mat[cell_order, ]
 
 # Mark cell types with Region FDR < 0.05.

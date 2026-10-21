@@ -191,8 +191,8 @@ stopifnot(!anyNA(cell_type))
 # not scored but are included in the z-scores).
 celltype_group <- list(
   Epithelial = c("ATI", "ATII", "Airway epithelial", "Sox9+ epithelial"),
-  Stromal = c("Fibroblast", "Smooth muscle", "Mesothelial"),
   Endothelial = c("Capillary endothelial", "Vascular endothelial", "VCAM1+ endothelial"),
+  Stromal = c("Fibroblast", "Smooth muscle", "Mesothelial"),
   Myeloid = c("Alveolar macrophage", "Interstitial macrophage", "Mrc1+ macrophage", "Monocyte",
               "Dendritic cell", "pDC/DC", "Neutrophil", "Mast cell"),
   Lymphoid = c("T cell", "B cell", "NK cell")
@@ -219,8 +219,8 @@ query.summary <- as.data.frame(sapply(signatures, score_groups, groups = setName
 # 5 compartments x 6 signatures.
 large_query_summary <- as.data.frame(sapply(signatures, score_groups, groups = celltype_group))
 
-# Cells per compartment (reported run: Epithelial 3,333, Stromal 702,
-# Endothelial 1,650, Myeloid 3,147, Lymphoid 1,823).
+# Cells per compartment (reported run: Epithelial 3,333, Endothelial 1,650,
+# Stromal 702, Myeloid 3,147, Lymphoid 1,823).
 sapply(celltype_group, function(x) sum(cell_type %in% x))
 
 export(
@@ -235,7 +235,7 @@ export(
 # plots show positive scores (size = score), depletion plots negative scores
 # (size = |score|); other cells are left empty.
 
-compartment_colors <- c(Epithelial = "#9EF5D3", Stromal = "#F5F59D", Endothelial = "#F2A7C7",
+compartment_colors <- c(Epithelial = "#9EF5D3", Endothelial = "#F2A7C7", Stromal = "#F5F59D",
                         Myeloid = "#94B3F5", Lymphoid = "#BDE3FA")
 row_compartment <- setNames(rep(names(celltype_group), lengths(celltype_group)), query_cell_types)
 

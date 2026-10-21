@@ -225,7 +225,8 @@ ggsave("UMAP cell type.pdf", p_umap, width = 11, height = 8.5)
 
 # Step 5: Marker genes per annotated cell type ---------------------------------
 
-# The 21 cell types used downstream (Cycling and Mixed clusters excluded).
+# The 21 cell types used downstream (Cycling and Mixed clusters excluded),
+# grouped by compartment: epithelial, endothelial, mesenchymal, immune.
 query_cell_types <- c(
   "ATI", "ATII", "Airway epithelial", "Sox9+ epithelial",
   "Capillary endothelial", "Vascular endothelial", "VCAM1+ endothelial",
