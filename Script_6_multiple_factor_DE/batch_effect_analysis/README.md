@@ -11,7 +11,7 @@ batch_effect_analysis/
 ├── code/
 │   ├── 01_batch_effect_models.R     # per-protein models, LRT, PCA, variance partitioning, sensitivity analysis
 │   ├── 02_supplementary_figure.R    # Supplementary Figure (panels a–d)
-│   └── 03_supplementary_table.R     # Supplementary Table (sheets A, B, C1, C2)
+│   └── 03_supplementary_table.R     # Supplementary Table S10 (5 worksheets)
 ├── data/                            # inputs (copied, not modified)
 │   ├── UW.Madison.rat.lung.proteomics_data_tables.RData   # Script_3 output; data_imp = 3,600 proteins x 96 samples
 │   ├── sample_metadata.xlsx                               # incl. Preparation Day and Injection Order
@@ -26,7 +26,9 @@ batch_effect_analysis/
 │   ├── Supplementary_Figure_batch_effect.pdf / .png
 │   └── PCA_by_preparation_day.pdf                # Script_3-style PCA, one view per page
 └── tables/                          # output of 03
-    └── Supplementary_Table_batch_effect.xlsx
+    └── Supplementary_Table_batch_effect.xlsx     # Supplementary Table S10; worksheets: Sample preparation,
+                                                  # Design balance, Sensitivity summary,
+                                                  # Sensitivity per protein, Matrisome DEP status
 ```
 
 ## How to run

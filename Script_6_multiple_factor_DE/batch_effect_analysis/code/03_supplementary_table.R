@@ -41,8 +41,7 @@
 #       Uniprot.ID / Gene.symbol of the Fig. 4h proteins, in heatmap row order.
 #
 # Outputs:
-#   - tables/Supplementary Table 10 Batch effect assessment of sample
-#     preparation day and LC-MS-MS injection order.xlsx
+#   - tables/Supplementary_Table_batch_effect.xlsx
 #   - results/03_supplementary_table_workspace.RData  (full R workspace)
 #
 # How to run:
@@ -88,7 +87,7 @@ args <- commandArgs(TRUE)
 indir  <- if (length(args) >= 1) args[1] else "data"      # input data folder
 resdir <- if (length(args) >= 2) args[2] else "results"   # Script_01 output folder
 outdir <- if (length(args) >= 3) args[3] else "tables"    # table output folder
-out_file <- "Supplementary Table 10 Batch effect assessment of sample preparation day and LC-MS-MS injection order.xlsx"
+out_file <- "Supplementary_Table_batch_effect.xlsx"
 
 # Script_01 results: cmp, tech, vpart, pc_assoc, robust, overall, workdata.
 load(file.path(resdir, "batch_results.RData"))
