@@ -204,4 +204,8 @@ Supporting inputs, processed files, pathway workbooks and figures remain alongsi
 
 Two large Script 9 saved workspaces (~760 MB each) were never added to Git and have since been deleted, because the revised Script 9 step 1 / step 2 scripts regenerate all results from the GEO data and the proteomics matrix; the [large-file manifest](docs/large_files_not_in_git.csv) keeps their sizes and checksums for reference. Local histories, temporary Excel files and deployment records are also excluded.
 
-This checkout does not include a license file or citation metadata. Formal release, archival deposition and reuse terms should be finalized with the manuscript; repository availability alone does not imply a license grant.
+## License
+
+- **Code** (R scripts and Shiny applications): [MIT License](LICENSE).
+- **Data, tables and figures** produced in this analysis: [Creative Commons Attribution 4.0 International (CC BY 4.0)](LICENSE-DATA). Please cite the associated publication and this repository when reusing them.
+- **Third-party material** keeps its original terms: the GEO rat lung scRNA-seq count files (GSE133747; Raredon et al.), UniProt and MatrisomeAnalyzer annotations, and pathway definitions or results from external tools (WebGestalt, PANTHER, Gene Ontology, Reactome) and published mouse proteomics data. See [LICENSE-DATA](LICENSE-DATA).

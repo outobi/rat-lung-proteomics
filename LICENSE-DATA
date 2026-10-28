@@ -1,0 +1,28 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Fei Wang
+
+The data, tables and figures in this repository (for example .xlsx, .csv,
+.tsv, .txt, .RData, .pdf, .png and .svg files produced by or used in this
+analysis) are licensed under the Creative Commons Attribution 4.0
+International License.
+
+You are free to share and adapt this material for any purpose, including
+commercially, provided that you give appropriate credit (cite the associated
+publication and this repository), provide a link to the license, and indicate
+if changes were made.
+
+Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
+Summary:           https://creativecommons.org/licenses/by/4.0/
+
+Third-party material is not covered by this license and remains under its
+original terms, including:
+  - Rat lung single-cell RNA-seq count files from GEO (GSE133747;
+    GSM3926541, GSM3926542; Raredon et al.) in the Script 9 folders.
+  - UniProt annotations (20220113_uniprot_annotation.RData) and
+    MatrisomeAnalyzer annotation output used in Script 1.
+  - Pathway definitions and enrichment results generated with external tools
+    (WebGestalt, PANTHER, Gene Ontology, Reactome) and published mouse
+    proteomics values cited in the supplementary tables.
+
+The analysis code is licensed separately under the MIT License; see LICENSE.
